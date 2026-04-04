@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip list:*)",
+      "Bash(pip3 list:*)",
+      "Read(//data1/adarsh/miniconda/envs/**)",
+      "Bash(conda info:*)",
+      "Bash(conda run:*)",
+      "Bash(1 conda:*)",
+      "Bash(/data1/adarsh/conda_envs/munba2/bin/pip install:*)",
+      "Bash(source /data1/adarsh/miniconda/bin/activate lora_mu)",
+      "Bash(python experiments/run_pipeline.py --dataset gmsc --mode quick)",
+      "Bash(source /data1/adarsh/miniconda/bin/activate)",
+      "Bash(conda activate:*)",
+      "Bash(ls /data1/adarsh/conda_envs/lora_mu/bin/python*)",
+      "Bash(/data1/adarsh/conda_envs/munba2/bin/python experiments/run_pipeline.py --dataset gmsc --mode quick)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(echo \"done: $?\")",
+      "Bash(/data1/adarsh/conda_envs/munba2/bin/python main.py --dataset gmsc --mode quick --no_baselines --no_mia --no_ablation)"
+    ]
+  }
+}

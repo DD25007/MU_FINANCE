@@ -1,0 +1,7 @@
+{
+  "dataset": "german",
+  "arch": "ft_transformer",
+  "forget_strategy": "demographic",
+  "forget_frac": 0.1,
+  "seed": 42
+}

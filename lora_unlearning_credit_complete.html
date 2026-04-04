@@ -1,0 +1,298 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.root{padding:1rem 0;font-family:var(--font-sans)}
+.tabs{display:flex;gap:5px;margin-bottom:16px;flex-wrap:wrap}
+.tab{font-size:12px;padding:5px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+.tab:hover{background:var(--color-background-secondary)}
+.tab.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+.slabel{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-tertiary);margin-bottom:10px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:5px}
+.card-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.65}
+.pill{font-size:11px;padding:2px 8px;border-radius:999px;border:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary);background:var(--color-background-secondary);display:inline-block;margin:2px}
+.pill.blue{border-color:#185FA5;color:#185FA5;background:#E6F1FB}
+.pill.teal{border-color:#0F6E56;color:#0F6E56;background:#E1F5EE}
+.pill.amber{border-color:#854F0B;color:#854F0B;background:#FAEEDA}
+.pill.coral{border-color:#993C1D;color:#993C1D;background:#FAECE7}
+.pill.purple{border-color:#534AB7;color:#534AB7;background:#EEEDFE}
+.pill.green{border-color:#3B6D11;color:#3B6D11;background:#EAF3DE}
+@media(prefers-color-scheme:dark){
+.pill.blue{border-color:#85B7EB;color:#85B7EB;background:#042C53}
+.pill.teal{border-color:#5DCAA5;color:#5DCAA5;background:#04342C}
+.pill.amber{border-color:#EF9F27;color:#EF9F27;background:#412402}
+.pill.coral{border-color:#F0997B;color:#F0997B;background:#4A1B0C}
+.pill.purple{border-color:#AFA9EC;color:#AFA9EC;background:#26215C}
+.pill.green{border-color:#97C459;color:#97C459;background:#173404}
+}
+.badge{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500}
+.b-red{background:var(--color-background-danger);color:var(--color-text-danger)}
+.b-blue{background:var(--color-background-info);color:var(--color-text-info)}
+.b-green{background:var(--color-background-success);color:var(--color-text-success)}
+.b-amber{background:var(--color-background-warning);color:var(--color-text-warning)}
+.gap-box{background:var(--color-background-secondary);border-left:2px solid var(--color-border-info);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:8px 12px;font-size:12px;color:var(--color-text-secondary);line-height:1.55;margin-top:10px}
+.warn-box{background:var(--color-background-secondary);border-left:2px solid var(--color-border-warning);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:8px 12px;font-size:12px;color:var(--color-text-secondary);line-height:1.55;margin-top:10px}
+.step{display:flex;gap:10px;margin-bottom:10px}
+.step-num{width:24px;height:24px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--color-text-secondary);flex-shrink:0;margin-top:1px}
+.step-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.step-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.vline{width:1px;height:8px;background:var(--color-border-tertiary);margin-left:11px}
+.mtable{width:100%;border-collapse:collapse;font-size:12px}
+.mtable th{text-align:left;font-weight:500;color:var(--color-text-secondary);padding:7px 10px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.mtable td{padding:7px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary);vertical-align:top}
+.mtable tr:last-child td{border-bottom:none}
+.mtable td:first-child{font-weight:500;color:var(--color-text-primary)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ask-btn{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:5px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;margin-top:8px;margin-right:6px}
+.ask-btn:hover{background:var(--color-background-secondary)}
+.phase-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+code{font-family:var(--font-mono);font-size:11px;background:var(--color-background-secondary);padding:1px 5px;border-radius:3px;color:var(--color-text-primary)}
+</style>
+
+<div class="root">
+<div class="tabs">
+  <button class="tab active" onclick="show('overview')">Overview</button>
+  <button class="tab" onclick="show('models')">Models</button>
+  <button class="tab" onclick="show('method')">Method</button>
+  <button class="tab" onclick="show('datasets')">Datasets</button>
+  <button class="tab" onclick="show('eval')">Evaluation</button>
+  <button class="tab" onclick="show('pipeline')">Pipeline</button>
+  <button class="tab" onclick="show('novelty')">Novelty & Gaps</button>
+</div>
+
+<!-- OVERVIEW -->
+<div id="tab-overview">
+  <p class="slabel">What this paper is about</p>
+  <div class="card">
+    <div class="card-title">The Core Problem</div>
+    <div class="card-desc">Credit scoring transformers are trained on millions of customer records. When a customer invokes GDPR Article 17 (Right to be Forgotten), the bank must remove their data's influence from the model. Full retraining takes hours or days. This paper proposes a fast, surgical alternative using LoRA adapters — reducing unlearning time from hours to minutes while provably satisfying forgetting criteria.</div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">What LoRA is</div>
+      <div class="card-desc">Low-Rank Adaptation freezes pretrained weights W and learns two small matrices A and B such that the update is W + BA (rank r ≪ d). Only A and B are trainable. Originally for LLM fine-tuning — you are repurposing it for unlearning.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">What Unlearning means here</div>
+      <div class="card-desc">Given a trained model M on dataset D, produce model M* that behaves identically to a model retrained from scratch on D minus the forget set D_f — but without actually retraining.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Why this combination is novel</div>
+    <div class="card-desc">LoRA has been used for fine-tuning and domain adaptation. Unlearning has been studied with gradient ascent, SISA, and influence functions. Nobody has combined LoRA's parameter-efficient update mechanism with the forgetting objective in a tabular financial model. That intersection is your contribution.</div>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+      <span class="pill blue">LoRA (Hu et al. 2021)</span>
+      <span class="pill coral">Machine Unlearning (Bourtoule 2021)</span>
+      <span class="pill teal">Credit Scoring Transformers</span>
+      <span class="pill amber">GDPR Compliance</span>
+    </div>
+  </div>
+  <div class="gap-box">Your one-line contribution: "We propose LoRA-Credit-Unlearn — a parameter-efficient unlearning framework for transformer-based credit scorers that achieves certified forgetting in O(minutes) vs O(hours) for full retraining, with less than 1% AUC degradation."</div>
+</div>
+
+<!-- MODELS -->
+<div id="tab-models" style="display:none">
+  <p class="slabel">Base models to train and unlearn</p>
+  <div class="card">
+    <div class="phase-header"><div class="card-title">FT-Transformer (Primary Model)</div><span class="badge b-red">Recommended</span></div>
+    <div class="card-desc">Feature Tokenization Transformer by Gorishniy et al. (2021). Each tabular feature is embedded into a token, then processed by standard transformer attention blocks. State-of-the-art on tabular benchmarks including credit datasets. This is your main model — apply LoRA to its attention layers.</div>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:5px">
+      <span class="pill blue">Tabular-native</span><span class="pill teal">Attention layers → LoRA target</span><span class="pill amber">Gorishniy et al. NeurIPS 2021</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="phase-header"><div class="card-title">TabTransformer (Secondary Model)</div><span class="badge b-blue">Also use</span></div>
+    <div class="card-desc">Huang et al. (2020). Applies transformer attention only to categorical features; numerical features are passed directly. Simpler architecture, good for ablation — shows your method works across transformer variants.</div>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:5px">
+      <span class="pill blue">Categorical attention</span><span class="pill teal">Simpler ablation model</span><span class="pill amber">Huang et al. 2020</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="phase-header"><div class="card-title">XGBoost / LightGBM (Baseline Comparison)</div><span class="badge b-blue">Baseline only</span></div>
+    <div class="card-desc">Non-transformer baselines. You do NOT apply LoRA here. Include them to show that transformer-based models warrant a special unlearning method — gradient boosting can be retrained fast, but transformers cannot. This contrast motivates your work.</div>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:5px">
+      <span class="pill coral">Motivation contrast</span><span class="pill">No LoRA applied</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Where LoRA adapters attach (FT-Transformer)</div>
+    <div class="card-desc">In each transformer block, you attach LoRA to the Query (Q) and Value (V) projection matrices of the self-attention layer. This is the standard LoRA target. Rank r = {4, 8, 16} is your ablation hyperparameter. The Feed-Forward layers are frozen throughout.</div>
+    <div style="margin-top:8px">
+      <span class="pill purple">Q projection → LoRA A, B</span>
+      <span class="pill purple">V projection → LoRA A, B</span>
+      <span class="pill">K projection → frozen</span>
+      <span class="pill">FFN → frozen</span>
+    </div>
+  </div>
+  <button class="ask-btn" onclick="sendPrompt('Give me the PyTorch code to attach LoRA adapters to the Q and V projections of an FT-Transformer model for credit scoring')">Get PyTorch code ↗</button>
+</div>
+
+<!-- METHOD -->
+<div id="tab-method" style="display:none">
+  <p class="slabel">The unlearning method — step by step</p>
+  <div class="card" style="background:var(--color-background-secondary)">
+    <div class="card-title" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em">Three-phase framework</div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <span class="pill blue">Phase 1: Train base model M on D</span>
+      <span style="color:var(--color-text-tertiary);font-size:14px;align-self:center">→</span>
+      <span class="pill coral">Phase 2: LoRA Forget Adapter on D_f</span>
+      <span style="color:var(--color-text-tertiary);font-size:14px;align-self:center">→</span>
+      <span class="pill teal">Phase 3: LoRA Retain Adapter on D_r</span>
+      <span style="color:var(--color-text-tertiary);font-size:14px;align-self:center">→</span>
+      <span class="pill green">Merge → M*</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="phase-header"><div class="card-title">Phase 1 — Train Base Credit Model</div><span class="badge b-blue">Standard</span></div>
+    <div class="card-desc">Train FT-Transformer on full dataset D = D_f ∪ D_r. Use binary cross-entropy loss for default prediction. This is your starting model M. Save all weights. This phase is done once — unlearning never touches these weights again.</div>
+    <div style="margin-top:6px"><code>Loss = BCE(M(x), y) for all x in D</code></div>
+  </div>
+  <div class="vline"></div>
+  <div class="card">
+    <div class="phase-header"><div class="card-title">Phase 2 — Forget Adapter (Gradient Ascent)</div><span class="badge b-red">Core novelty</span></div>
+    <div class="card-desc">Freeze M. Attach LoRA adapter Θ_f to Q and V layers. Train ONLY Θ_f using gradient ascent on D_f — we want the model to perform poorly on forget-set samples, effectively erasing their signal. Run for a small number of steps (20–50) to avoid catastrophic drift.</div>
+    <div style="margin-top:6px"><code>Loss_forget = −BCE(M+Θ_f(x), y) for x in D_f</code></div>
+    <div class="warn-box">Key risk: too many gradient ascent steps will corrupt the model beyond D_f. Use early stopping on retain-set AUC to know when to stop.</div>
+  </div>
+  <div class="vline"></div>
+  <div class="card">
+    <div class="phase-header"><div class="card-title">Phase 3 — Retain Adapter (Knowledge Distillation)</div><span class="badge b-red">Core novelty</span></div>
+    <div class="card-desc">Attach a second LoRA adapter Θ_r. Train it by distilling from the original frozen model M on the retain set D_r. The student (M + Θ_f + Θ_r) should match M's predictions on D_r exactly. This repairs any collateral damage from Phase 2 and locks in the useful knowledge.</div>
+    <div style="margin-top:6px"><code>Loss_retain = KL(M+Θ_f+Θ_r(x) ∥ M(x)) for x in D_r</code></div>
+  </div>
+  <div class="vline"></div>
+  <div class="card">
+    <div class="phase-header"><div class="card-title">Adapter Merging → Final Model M*</div><span class="badge b-green">Output</span></div>
+    <div class="card-desc">Merge the retain adapter Θ_r into the base model weights: W* = W + BA for each adapted layer. The forget adapter Θ_f is discarded — its job was to create the signal for Phase 3. M* is your final unlearned model, deployable with no architectural changes.</div>
+    <div style="margin-top:6px"><code>W* = W_frozen + B_r · A_r (merge retain adapter only)</code></div>
+  </div>
+  <div class="gap-box">Optional extension: add a third adapter for fairness regularization — constrain equalized odds on protected attributes during Phase 3. This turns the paper into a fairness + unlearning dual contribution.</div>
+  <button class="ask-btn" onclick="sendPrompt('Write the complete training loop in PyTorch for the LoRA forget adapter using gradient ascent on a credit scoring FT-Transformer')">Get training loop code ↗</button>
+  <button class="ask-btn" onclick="sendPrompt('Write the knowledge distillation loss function for the LoRA retain adapter in PyTorch')">Get distillation loss code ↗</button>
+</div>
+
+<!-- DATASETS -->
+<div id="tab-datasets" style="display:none">
+  <p class="slabel">Datasets and how to use them</p>
+  <div class="card">
+    <div class="phase-header"><div class="card-title">German Credit Dataset (UCI)</div><span class="badge b-green">Primary — start here</span></div>
+    <div class="card-desc">1,000 samples, 20 features (age, sex, employment, credit amount, duration). Binary: good/bad credit. Small enough for rapid iteration. Age and gender columns make it ideal for fairness-aware forget sets. Forget set strategy: all samples where applicant age &lt; 25 (young demographic) or random 10–20% stratified sample.</div>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">
+      <span class="pill teal">1,000 samples</span><span class="pill">20 features</span><span class="pill blue">Binary classification</span><span class="pill amber">Protected: age, gender</span><span class="pill green">Free / UCI</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="phase-header"><div class="card-title">Give Me Some Credit (Kaggle)</div><span class="badge b-blue">Secondary — scale test</span></div>
+    <div class="card-desc">150,000 borrowers, 10 features, predict 90-day delinquency. Standard benchmark — many papers use it so comparisons are easy. Forget set strategy: random stratified 10% for GDPR simulation, or high-debt subgroup for fairness experiments.</div>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">
+      <span class="pill teal">150K samples</span><span class="pill">10 features</span><span class="pill blue">Default prediction</span><span class="pill green">Free / Kaggle</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="phase-header"><div class="card-title">LendingClub (2007–2020)</div><span class="badge b-amber">Temporal extension</span></div>
+    <div class="card-desc">2M+ loan records across 13 years. Use for temporal unlearning experiments: forget the 2008 crisis window (2007–2009) or COVID window (2020) as your D_f. This adds a temporal unlearning angle to the paper — "concept drift forgetting" — expanding the contribution.</div>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">
+      <span class="pill teal">2M+ records</span><span class="pill">150+ features</span><span class="pill blue">Risk grade prediction</span><span class="pill amber">Temporal splits</span><span class="pill green">Free / Kaggle</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">How to construct the Forget Set D_f (critical design choice)</div>
+    <div class="card-desc">Your forget set construction strategy IS part of your novelty claim. Three strategies to implement and compare: (1) Random subset — randomly select 5%, 10%, 20% of training data. Tests scalability. (2) Demographic subgroup — all samples from a protected group (e.g. age &lt; 25). Tests fairness-driven unlearning. (3) Temporal window — all samples from a specific time period. Tests concept drift use case.</div>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">
+      <span class="pill coral">Random 5–20%</span><span class="pill coral">Demographic subgroup</span><span class="pill coral">Temporal window</span>
+    </div>
+  </div>
+</div>
+
+<!-- EVALUATION -->
+<div id="tab-eval" style="display:none">
+  <p class="slabel">Metrics — how you prove it works</p>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="mtable">
+      <thead><tr><th>Metric</th><th>How to compute</th><th>Target value</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>MIA Score</td><td>Train shadow model attack; measure adversary accuracy on D_f</td><td>≈ 50% (random)</td><td>Certified forgetting proof</td></tr>
+        <tr><td>Forget-set Accuracy</td><td>Model accuracy on D_f after unlearning</td><td>↓ Near chance (50%)</td><td>Direct forgetting evidence</td></tr>
+        <tr><td>Retain AUC</td><td>AUC-ROC on D_r post-unlearning</td><td>Within 1% of M</td><td>Utility preservation</td></tr>
+        <tr><td>Test AUC</td><td>AUC-ROC on held-out test set</td><td>Within 1–2% of M</td><td>Generalization preserved</td></tr>
+        <tr><td>KL Divergence</td><td>KL(M*(x) ∥ M_retrain(x)) on test set</td><td>↓ Close to 0</td><td>Distance from gold standard</td></tr>
+        <tr><td>Relearn Time</td><td>Steps to reach original forget-set accuracy if retrained</td><td>↑ Maximise</td><td>Forgetting permanence</td></tr>
+        <tr><td>Wall-clock Time</td><td>Minutes for unlearning vs hours for full retrain</td><td>10×–100× faster</td><td>Practicality / efficiency</td></tr>
+        <tr><td>Fairness Δ (ΔEO)</td><td>Equalized odds difference before/after unlearning</td><td>↓ Reduction</td><td>Finance-specific metric</td></tr>
+        <tr><td># Trainable Params</td><td>LoRA params vs full model params</td><td>&lt;1% of M</td><td>Efficiency of LoRA</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="gap-box" style="margin-top:0">The MIA Score is your central claim. Everything else supports it. If MIA ≈ 50% AND Retain AUC is stable AND wall-clock time is 50×+ faster — you have a strong paper.</div>
+  <div class="card" style="margin-top:10px">
+    <div class="card-title">Baselines you must beat</div>
+    <div class="card-desc">Report all metrics for each baseline in a single table. Your method should win on time efficiency while matching or beating unlearning quality.</div>
+    <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:5px">
+      <span class="pill coral">Full Retrain (gold standard — slow)</span>
+      <span class="pill coral">SISA Training</span>
+      <span class="pill coral">Gradient Ascent (naïve)</span>
+      <span class="pill coral">Influence Functions</span>
+      <span class="pill coral">Fine-tune on D_r only</span>
+    </div>
+  </div>
+</div>
+
+<!-- PIPELINE -->
+<div id="tab-pipeline" style="display:none">
+  <p class="slabel">Full experimental pipeline</p>
+  <div class="step"><div class="step-num">1</div><div><div class="step-title">Data preparation</div><div class="step-desc">Load German Credit + GiveMeSomeCredit. Preprocess: one-hot encode categoricals, normalise numericals. Split: 70% train (D), 15% validation, 15% test. Within D, define D_f (forget set) using all 3 strategies above.</div></div></div>
+  <div class="vline"></div>
+  <div class="step"><div class="step-num">2</div><div><div class="step-title">Train base model M</div><div class="step-desc">Train FT-Transformer + TabTransformer on full D. Record AUC, training time, model size. Save checkpoints. This is your starting point for all unlearning methods.</div></div></div>
+  <div class="vline"></div>
+  <div class="step"><div class="step-num">3</div><div><div class="step-title">Run all baselines</div><div class="step-desc">Apply Full Retrain, SISA, Gradient Ascent, Influence Functions, and Fine-tune-on-D_r to the same base model. Record all 9 metrics for each. These go into your main results table.</div></div></div>
+  <div class="vline"></div>
+  <div class="step"><div class="step-num">4</div><div><div class="step-title">Run your LoRA method</div><div class="step-desc">Apply Phase 2 (forget adapter) + Phase 3 (retain adapter). Sweep LoRA rank r ∈ {4, 8, 16}. Sweep forget-set size |D_f| ∈ {5%, 10%, 20%}. Record all 9 metrics for each configuration.</div></div></div>
+  <div class="vline"></div>
+  <div class="step"><div class="step-num">5</div><div><div class="step-title">Ablation study</div><div class="step-desc">Remove Phase 3 (retain adapter) — does forgetting quality degrade? Remove Phase 2 (forget adapter) — does the model still forget? Vary LoRA rank. This section proves each component is necessary.</div></div></div>
+  <div class="vline"></div>
+  <div class="step"><div class="step-num">6</div><div><div class="step-title">MIA attack experiment</div><div class="step-desc">Train a membership inference attack classifier on shadow models. Apply it to M* and to M_retrain. Show MIA score converges to 50% (random) for your method — this is your strongest proof of forgetting.</div></div></div>
+  <div class="vline"></div>
+  <div class="step"><div class="step-num">7</div><div><div class="step-title">Scalability experiment</div><div class="step-desc">Repeat on GiveMeSomeCredit (150K) and LendingClub (temporal). Show wall-clock speedup scales with dataset size — larger datasets → greater advantage over full retrain.</div></div></div>
+  <button class="ask-btn" onclick="sendPrompt('Write a complete Python script to run the LoRA credit unlearning pipeline on the German Credit dataset using FT-Transformer with PyTorch')">Full pipeline code ↗</button>
+  <button class="ask-btn" onclick="sendPrompt('Write Python code for a membership inference attack to evaluate machine unlearning on a credit scoring model')">MIA attack code ↗</button>
+</div>
+
+<!-- NOVELTY -->
+<div id="tab-novelty" style="display:none">
+  <p class="slabel">What makes this publishable</p>
+  <div class="card">
+    <div class="card-title">The 3 novelty claims</div>
+    <div class="card-desc" style="margin-bottom:8px">Each claim must appear in your abstract and introduction:</div>
+    <div class="step" style="margin-top:4px"><div class="step-num">N1</div><div><div class="step-title">First LoRA unlearning for tabular credit models</div><div class="step-desc">LoRA has only been used for fine-tuning. Repurposing it for the unlearning objective (gradient ascent + distillation via adapters) is architecturally novel.</div></div></div>
+    <div class="step"><div class="step-num">N2</div><div><div class="step-title">Dual-adapter decomposition (forget + retain)</div><div class="step-desc">Separating the forget signal and the utility repair into two independent adapters is a design contribution. Prior gradient ascent methods do both in one uncontrolled pass.</div></div></div>
+    <div class="step"><div class="step-num">N3</div><div><div class="step-title">Finance-specific evaluation with regulatory framing</div><div class="step-desc">Applying MIA + Fairness ΔEO + GDPR compliance framing to credit unlearning is new. No existing paper benchmarks unlearning specifically against the EU AI Act's high-risk system criteria.</div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Key papers to cite (and distinguish from)</div>
+    <div class="card-desc">You must explicitly say how you differ from each:</div>
+    <div style="margin-top:8px">
+      <div style="font-size:12px;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)"><span style="font-weight:500;color:var(--color-text-primary)">Bourtoule et al. 2021 (SISA)</span> — your baseline. You outperform it in time efficiency for transformer models.</div>
+      <div style="font-size:12px;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)"><span style="font-weight:500;color:var(--color-text-primary)">Hu et al. 2021 (LoRA)</span> — you borrow the adapter mechanism but use it for unlearning, not adaptation.</div>
+      <div style="font-size:12px;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)"><span style="font-weight:500;color:var(--color-text-primary)">Gorishniy et al. 2021 (FT-Transformer)</span> — your base model. Cite as architecture reference.</div>
+      <div style="font-size:12px;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)"><span style="font-weight:500;color:var(--color-text-primary)">Chundawat et al. 2023 (Bad Teacher)</span> — closest unlearning approach to yours. Distinguish: they use knowledge distillation globally; you use targeted LoRA adapters.</div>
+      <div style="font-size:12px;padding:5px 0;color:var(--color-text-secondary)"><span style="font-weight:500;color:var(--color-text-primary)">Mehrabi et al. 2021 (Fairness survey)</span> — cite to motivate fairness evaluation in credit.</div>
+    </div>
+  </div>
+  <div class="gap-box">Reviewer-proof claim: search "LoRA unlearning credit scoring" on Google Scholar and Semantic Scholar — you will find zero papers. That is your novelty evidence. Screenshot it.</div>
+  <button class="ask-btn" onclick="sendPrompt('Write the Related Work section for a paper on LoRA-based machine unlearning for credit scoring transformers, covering SISA, influence functions, LoRA, and fairness in credit')">Draft related work ↗</button>
+  <button class="ask-btn" onclick="sendPrompt('Write a 250-word abstract for a paper titled: LoRA-Credit-Unlearn: Parameter-Efficient Machine Unlearning for Transformer-Based Credit Scoring')">Draft abstract ↗</button>
+</div>
+
+</div>
+
+<script>
+function show(name){
+  ['overview','models','method','datasets','eval','pipeline','novelty'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===name?'':'none';
+  });
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('active',['overview','models','method','datasets','eval','pipeline','novelty'][i]===name);
+  });
+}
+</script>
