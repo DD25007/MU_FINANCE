@@ -1,0 +1,189 @@
+LoRA_MU Run Guide
+=================
+
+This file shows how to run the main files in this project.
+
+1. Environment setup
+--------------------
+
+Create and activate the conda environment from environment.yml:
+
+conda env create -f environment.yml
+conda activate mu
+
+If the environment already exists:
+
+conda activate mu
+
+
+2. Main runnable files
+----------------------
+
+A. Prepare dataset splits
+
+File:
+python data_prep.py
+
+Examples:
+python data_prep.py
+python data_prep.py --dataset german --strategy random --forget_frac 0.10
+python data_prep.py --dataset german --strategy demographic
+python data_prep.py --dataset german --strategy temporal --forget_frac 0.20
+python data_prep.py --dataset gmsc --strategy random --forget_frac 0.10
+
+Supported arguments:
+--dataset        german | gmsc
+--strategy       random | demographic | temporal
+--forget_frac    fraction to forget, example 0.10
+--seed           random seed
+
+
+B. Run the main pipeline
+
+File:
+python main.py
+
+Examples:
+python main.py
+python main.py --mode quick
+python main.py --dataset german --arch ft_transformer --mode full
+python main.py --dataset german --arch tabddpm --mode quick
+python main.py --dataset gmsc --arch tab_transformer --mode quick
+python main.py --dataset german --arch ft_transformer --mode ablation
+python main.py --mode scalability
+
+Supported arguments:
+--dataset            german | gmsc
+--arch               ft_transformer | tab_transformer | tabddpm
+--mode               full | quick | ablation | scalability
+--forget_strategy    random | demographic
+--forget_frac        example 0.10
+--lora_rank          example 8
+--epochs             example 50
+--data_dir           default data/raw
+--results_dir        default results
+--seed               random seed
+--no_baselines       skip baselines
+--no_mia             skip membership inference attack evaluation
+--no_ablation        skip ablation
+
+Useful quick runs:
+python main.py --mode quick --no_mia
+python main.py --mode quick --no_baselines --no_mia --no_ablation
+
+
+C. Run baseline methods only
+
+File:
+python experiments/run_baselines.py
+
+Examples:
+python experiments/run_baselines.py
+python experiments/run_baselines.py --config experiments/configs/german_ft_random.json
+python experiments/run_baselines.py --config experiments/configs/german_tabddpm_random.json
+python experiments/run_baselines.py --config experiments/configs/gmsc_tabddpm_random.json
+python experiments/run_baselines.py --config experiments/configs/german_ft_random.json --methods full_retrain,gradient_diff
+python experiments/run_baselines.py --config experiments/configs/german_ft_random.json --methods random_labels,scrub,sisa
+
+Supported arguments:
+--config         path to a JSON config file
+--methods        comma-separated subset of methods
+
+Available baseline methods:
+full_retrain
+gradient_diff
+gradient_ascent
+finetune_retain
+influence_fn
+scrub
+random_labels
+sisa
+
+
+3. Config files you can use
+---------------------------
+
+examples/configs in this repo:
+
+experiments/configs/german_ft_random.json
+experiments/configs/german_ft_demographic.json
+experiments/configs/german_ft_temporal.json
+experiments/configs/german_tab_random.json
+experiments/configs/german_tabddpm_random.json
+experiments/configs/gmsc_ft_random.json
+experiments/configs/gmsc_tabddpm_random.json
+
+Example:
+python experiments/run_baselines.py --config experiments/configs/german_ft_random.json
+
+
+4. Files that are NOT direct CLI scripts
+----------------------------------------
+
+These files are mainly imported by other scripts and are usually not run directly:
+
+train.py
+models/ft_transformer.py
+models/tab_transformer.py
+models/tabddpm.py
+models/lora.py
+evaluation/fairness.py
+evaluation/metrics.py
+evaluation/mia.py
+evaluation/reporting.py
+unlearning/full_retrain.py
+unlearning/gradient_ascent.py
+unlearning/gradient_diff.py
+unlearning/finetune_retain.py
+unlearning/influence_functions.py
+unlearning/random_labels.py
+unlearning/retain_adapter.py
+unlearning/forget_adapter.py
+unlearning/scrub.py
+unlearning/sisa.py
+experiments/run_pipeline.py
+experiments/ablation.py
+experiments/scalability.py
+
+They are used internally by:
+python main.py
+or
+python experiments/run_baselines.py
+
+
+5. Typical workflow
+-------------------
+
+Step 1:
+python data_prep.py --dataset german --strategy random --forget_frac 0.10
+
+Step 2:
+python main.py --dataset german --arch ft_transformer --mode quick
+
+Step 3:
+python experiments/run_baselines.py --config experiments/configs/german_ft_random.json
+
+
+6. Output locations
+-------------------
+
+Processed data:
+data/processed/
+
+Saved results:
+results/
+
+Saved checkpoints:
+models/checkpoints/
+
+
+7. Notes
+--------
+
+- In the current workspace, environment.yml exists and defines the conda environment name as: mu
+- In the current workspace, requirements.txt was not found.
+- In the current workspace, setup_env.sh was not found.
+- The three direct runnable entrypoints found here are:
+  python data_prep.py
+  python main.py
+  python experiments/run_baselines.py
