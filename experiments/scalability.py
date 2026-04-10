@@ -16,8 +16,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from data.datasets import prepare_datasets
 from train import build_model, train_model, evaluate
-from unlearning.forget_adapter import run_forget_adapter
-from unlearning.retain_adapter import run_retain_adapter
+from unlearning.kaustav_forget_adapter import run_forget_adapter
+from unlearning.kaustav_retain_adapter import run_retain_adapter
 from unlearning.baselines import baseline_full_retrain
 from evaluation.metrics import full_evaluation, forget_set_accuracy, compute_auc
 
@@ -53,9 +53,14 @@ def run_scalability_experiment(cfg: dict, device: torch.device) -> dict:
 
         def model_factory():
             return build_model(
-                cfg["arch"], num_num_features, cat_dims, device,
-                d_model=cfg["d_model"], n_heads=cfg["n_heads"],
-                n_layers=cfg["n_layers"], dropout=cfg["dropout"]
+                cfg["arch"],
+                num_num_features,
+                cat_dims,
+                device,
+                d_model=cfg["d_model"],
+                n_heads=cfg["n_heads"],
+                n_layers=cfg["n_layers"],
+                dropout=cfg["dropout"],
             )
 
         # Train base model
@@ -63,9 +68,14 @@ def run_scalability_experiment(cfg: dict, device: torch.device) -> dict:
         t0 = time.time()
         base_model = model_factory()
         base_model, _ = train_model(
-            base_model, full_train, val_ds, device,
-            epochs=cfg["epochs"], batch_size=cfg["batch_size"],
-            lr=cfg["lr"], verbose=False
+            base_model,
+            full_train,
+            val_ds,
+            device,
+            epochs=cfg["epochs"],
+            batch_size=cfg["batch_size"],
+            lr=cfg["lr"],
+            verbose=False,
         )
         base_train_time = time.time() - t0
         base_forget_acc = forget_set_accuracy(base_model, forget_ds, device)
@@ -74,28 +84,58 @@ def run_scalability_experiment(cfg: dict, device: torch.device) -> dict:
         print("Running LoRA unlearning...")
         t_lora_start = time.time()
         m_fa, _ = run_forget_adapter(
-            base_model, forget_ds, retain_ds, device,
-            lora_r=cfg["lora_rank_default"], max_steps=cfg["fa_steps"], verbose=False
+            base_model,
+            forget_ds,
+            retain_ds,
+            device,
+            lora_r=cfg["lora_rank_default"],
+            max_steps=cfg["fa_steps"],
+            verbose=False,
         )
         m_star, _ = run_retain_adapter(
-            m_fa, base_model, retain_ds, val_ds, device,
-            lora_r=cfg["lora_rank_default"], epochs=cfg["ra_epochs"], verbose=False
+            m_fa,
+            base_model,
+            retain_ds,
+            val_ds,
+            device,
+            lora_r=cfg["lora_rank_default"],
+            epochs=cfg["ra_epochs"],
+            verbose=False,
         )
         lora_time = time.time() - t_lora_start
         lora_metrics = full_evaluation(
-            m_star, base_model, forget_ds, retain_ds, test_ds,
-            device, base_forget_acc, elapsed_seconds=lora_time, verbose=True
+            m_star,
+            base_model,
+            forget_ds,
+            retain_ds,
+            test_ds,
+            device,
+            base_forget_acc,
+            elapsed_seconds=lora_time,
+            verbose=True,
         )
 
         # Full retrain
         print("Running full retrain baseline...")
         m_retrain, h_retrain = baseline_full_retrain(
-            model_factory, retain_ds, val_ds, device,
-            epochs=cfg["epochs"], batch_size=cfg["batch_size"], verbose=False
+            model_factory,
+            retain_ds,
+            val_ds,
+            device,
+            epochs=cfg["epochs"],
+            batch_size=cfg["batch_size"],
+            verbose=False,
         )
         retrain_metrics = full_evaluation(
-            m_retrain, base_model, forget_ds, retain_ds, test_ds,
-            device, base_forget_acc, elapsed_seconds=h_retrain["elapsed"], verbose=True
+            m_retrain,
+            base_model,
+            forget_ds,
+            retain_ds,
+            test_ds,
+            device,
+            base_forget_acc,
+            elapsed_seconds=h_retrain["elapsed"],
+            verbose=True,
         )
 
         speedup = h_retrain["elapsed"] / max(lora_time, 1e-3)

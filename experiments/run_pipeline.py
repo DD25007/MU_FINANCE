@@ -29,17 +29,23 @@ from models.ft_transformer import FTTransformer
 from models.tab_transformer import TabTransformer
 from models.lora import count_parameters, merge_lora_into_model
 from train import build_model, train_model, save_model, load_model, evaluate
-from unlearning.forget_adapter import run_forget_adapter
-from unlearning.retain_adapter import run_retain_adapter
+from unlearning.kaustav_forget_adapter import run_forget_adapter
+from unlearning.kaustav_retain_adapter import run_retain_adapter
 from unlearning.baselines import (
-    baseline_full_retrain, baseline_gradient_ascent,
-    baseline_finetune_retain, baseline_sisa, baseline_influence_functions,
+    baseline_full_retrain,
+    baseline_gradient_ascent,
+    baseline_finetune_retain,
+    baseline_sisa,
+    baseline_influence_functions,
     baseline_random_labels,
 )
 from evaluation.metrics import (
-    full_evaluation, forget_set_accuracy, compute_auc, get_predictions
+    full_evaluation,
+    forget_set_accuracy,
+    compute_auc,
+    get_predictions,
 )
-from evaluation.mia import run_mia, loss_based_mia
+from evaluation.kaustav_mia import run_mia, loss_based_mia, run_full_mia_suite
 
 
 # ──────────────────────────────────────────────
@@ -66,8 +72,8 @@ DEFAULT_CFG = {
     "lambda_retain": 0.5,
     "retain_auc_min": 0.72,
     "ra_epochs": 25,
-    "gamma_forget": 10.0,       # bad-teacher weight in Phase 3 (0 = disabled)
-    "max_forget_recovery": 0.15, # Phase 3 ceiling: max allowed forget_auc rise above Phase 2 end
+    "gamma_forget": 10.0,  # bad-teacher weight in Phase 3 (0 = disabled)
+    "max_forget_recovery": 0.08,  # (updated from 0.15) Phase 3 ceiling: max allowed forget_auc rise above Phase 2 end
     "n_shadow_mia": 3,
     "run_mia": True,
     "run_baselines": True,
@@ -77,6 +83,11 @@ DEFAULT_CFG = {
     "seed": 42,
     "data_dir": "data/raw",
     "verbose": True,
+    "mia_noise_injection": True,
+    "mia_noise_scale": 0.02,
+    "run_relearning_mia": True,
+    "relearning_steps": 20,
+    "calibrated_shadow": True,
 }
 
 
@@ -84,19 +95,27 @@ DEFAULT_CFG = {
 # Helper: model factory
 # ──────────────────────────────────────────────
 
+
 def get_model_factory(cfg, num_num_features, cat_dims, device):
     def factory():
         return build_model(
-            cfg["arch"], num_num_features, cat_dims, device,
-            d_model=cfg["d_model"], n_heads=cfg["n_heads"],
-            n_layers=cfg["n_layers"], dropout=cfg["dropout"]
+            cfg["arch"],
+            num_num_features,
+            cat_dims,
+            device,
+            d_model=cfg["d_model"],
+            n_heads=cfg["n_heads"],
+            n_layers=cfg["n_layers"],
+            dropout=cfg["dropout"],
         )
+
     return factory
 
 
 # ──────────────────────────────────────────────
 # Main pipeline
 # ──────────────────────────────────────────────
+
 
 def run_pipeline(cfg: dict = None) -> dict:
     if cfg is None:
@@ -140,8 +159,7 @@ def run_pipeline(cfg: dict = None) -> dict:
     # STEP 2: Train base model M
     # ────────────────────────────────────────
     print("\nStep 2: Train base model M")
-    ckpt_path = os.path.join(cfg["ckpt_dir"],
-                             f"base_{cfg['dataset']}_{cfg['arch']}.pt")
+    ckpt_path = os.path.join(cfg["ckpt_dir"], f"base_{cfg['dataset']}_{cfg['arch']}.pt")
 
     base_model = model_factory()
     if os.path.exists(ckpt_path):
@@ -150,21 +168,30 @@ def run_pipeline(cfg: dict = None) -> dict:
     else:
         t0 = time.time()
         base_model, base_hist = train_model(
-            base_model, full_train, val_ds, device,
-            epochs=cfg["epochs"], batch_size=cfg["batch_size"], lr=cfg["lr"],
+            base_model,
+            full_train,
+            val_ds,
+            device,
+            epochs=cfg["epochs"],
+            batch_size=cfg["batch_size"],
+            lr=cfg["lr"],
             verbose=cfg["verbose"],
         )
         base_train_time = time.time() - t0
         save_model(base_model, ckpt_path)
         all_results["base_train_time"] = base_train_time
-        all_results["base_history"] = {k: v for k, v in base_hist.items()
-                                       if k != "best_state"}
+        all_results["base_history"] = {
+            k: v for k, v in base_hist.items() if k != "best_state"
+        }
 
     base_test_auc = compute_auc(base_model, test_ds, device)
     base_forget_acc = forget_set_accuracy(base_model, forget_ds, device)
     from evaluation.metrics import forget_set_auc
+
     base_forget_auc = forget_set_auc(base_model, forget_ds, device)
-    print(f"  Base model | test_auc={base_test_auc:.4f} | forget_auc={base_forget_auc:.4f} | forget_acc={base_forget_acc:.4f}")
+    print(
+        f"  Base model | test_auc={base_test_auc:.4f} | forget_auc={base_forget_auc:.4f} | forget_acc={base_forget_acc:.4f}"
+    )
     all_results["base_test_auc"] = base_test_auc
     all_results["base_forget_acc"] = base_forget_acc
     all_results["base_forget_auc"] = base_forget_auc
@@ -187,21 +214,32 @@ def run_pipeline(cfg: dict = None) -> dict:
     effective_fa_lr = cfg.get("fa_lr", 5e-4) * (4 if large_dataset else 1)
     effective_lambda = 0.2 if large_dataset else cfg.get("lambda_retain", 0.5)
     # Large datasets need more Phase 3 epochs to converge KL distillation
-    effective_ra_epochs = max(cfg["ra_epochs"], 40) if large_dataset else cfg["ra_epochs"]
+    effective_ra_epochs = (
+        max(cfg["ra_epochs"], 40) if large_dataset else cfg["ra_epochs"]
+    )
 
     changes = []
     if effective_fa_steps != cfg["fa_steps"]:
         changes.append(f"fa_steps {cfg['fa_steps']}→{effective_fa_steps}")
     if large_dataset:
         changes.append(f"fa_lr {cfg.get('fa_lr',5e-4):.0e}→{effective_fa_lr:.0e}")
-        changes.append(f"lambda_retain {cfg.get('lambda_retain',0.5)}→{effective_lambda}")
+        changes.append(
+            f"lambda_retain {cfg.get('lambda_retain',0.5)}→{effective_lambda}"
+        )
         if effective_ra_epochs != cfg["ra_epochs"]:
             changes.append(f"ra_epochs {cfg['ra_epochs']}→{effective_ra_epochs}")
     if changes:
-        print(f"  [Config] Auto-tuned for forget_set={len(forget_ds)}: {', '.join(changes)}")
+        print(
+            f"  [Config] Auto-tuned for forget_set={len(forget_ds)}: {', '.join(changes)}"
+        )
 
-    cfg = {**cfg, "fa_steps": effective_fa_steps, "fa_lr": effective_fa_lr,
-           "lambda_retain": effective_lambda, "ra_epochs": effective_ra_epochs}
+    cfg = {
+        **cfg,
+        "fa_steps": effective_fa_steps,
+        "fa_lr": effective_fa_lr,
+        "lambda_retain": effective_lambda,
+        "ra_epochs": effective_ra_epochs,
+    }
 
     # ────────────────────────────────────────
     # STEP 3: Baselines
@@ -214,24 +252,52 @@ def run_pipeline(cfg: dict = None) -> dict:
         # 3a. Full Retrain
         print("\n  3a. Full Retrain")
         m_retrain, h_retrain = baseline_full_retrain(
-            model_factory, retain_ds, val_ds, device,
-            epochs=cfg["epochs"], batch_size=cfg["batch_size"], verbose=cfg["verbose"]
+            model_factory,
+            retain_ds,
+            val_ds,
+            device,
+            epochs=cfg["epochs"],
+            batch_size=cfg["batch_size"],
+            verbose=cfg["verbose"],
         )
-        r = full_evaluation(m_retrain, base_model, forget_ds, retain_ds, test_ds,
-                            device, base_forget_acc, elapsed_seconds=h_retrain["elapsed"],
-                            verbose=True)
+        baseline_results["_full_retrain_model"] = m_retrain  # for LiRA reference
+
+        r = full_evaluation(
+            m_retrain,
+            base_model,
+            forget_ds,
+            retain_ds,
+            test_ds,
+            device,
+            base_forget_acc,
+            elapsed_seconds=h_retrain["elapsed"],
+            verbose=True,
+        )
         r["elapsed"] = h_retrain["elapsed"]
         baseline_results["full_retrain"] = r
 
         # 3b. Naïve Gradient Ascent
         print("\n  3b. Naïve Gradient Ascent")
         m_ga, h_ga = baseline_gradient_ascent(
-            base_model, forget_ds, retain_ds, val_ds, device,
-            max_steps=cfg["fa_steps"] * 2, verbose=cfg["verbose"]
+            base_model,
+            forget_ds,
+            retain_ds,
+            val_ds,
+            device,
+            max_steps=cfg["fa_steps"] * 2,
+            verbose=cfg["verbose"],
         )
-        r = full_evaluation(m_ga, base_model, forget_ds, retain_ds, test_ds,
-                            device, base_forget_acc, elapsed_seconds=h_ga["elapsed"],
-                            verbose=True)
+        r = full_evaluation(
+            m_ga,
+            base_model,
+            forget_ds,
+            retain_ds,
+            test_ds,
+            device,
+            base_forget_acc,
+            elapsed_seconds=h_ga["elapsed"],
+            verbose=True,
+        )
         r["elapsed"] = h_ga["elapsed"]
         baseline_results["gradient_ascent"] = r
 
@@ -240,21 +306,43 @@ def run_pipeline(cfg: dict = None) -> dict:
         m_ft, h_ft = baseline_finetune_retain(
             base_model, retain_ds, val_ds, device, verbose=cfg["verbose"]
         )
-        r = full_evaluation(m_ft, base_model, forget_ds, retain_ds, test_ds,
-                            device, base_forget_acc, elapsed_seconds=h_ft["elapsed"],
-                            verbose=True)
+        r = full_evaluation(
+            m_ft,
+            base_model,
+            forget_ds,
+            retain_ds,
+            test_ds,
+            device,
+            base_forget_acc,
+            elapsed_seconds=h_ft["elapsed"],
+            verbose=True,
+        )
         r["elapsed"] = h_ft["elapsed"]
         baseline_results["finetune_retain"] = r
 
         # 3d. SISA
         print("\n  3d. SISA")
         m_sisa, h_sisa = baseline_sisa(
-            model_factory, full_train, forget_indices, val_ds, device,
-            n_shards=4, epochs_per_shard=15, verbose=cfg["verbose"]
+            model_factory,
+            full_train,
+            forget_indices,
+            val_ds,
+            device,
+            n_shards=4,
+            epochs_per_shard=15,
+            verbose=cfg["verbose"],
         )
-        r = full_evaluation(m_sisa, base_model, forget_ds, retain_ds, test_ds,
-                            device, base_forget_acc, elapsed_seconds=h_sisa["elapsed"],
-                            verbose=True)
+        r = full_evaluation(
+            m_sisa,
+            base_model,
+            forget_ds,
+            retain_ds,
+            test_ds,
+            device,
+            base_forget_acc,
+            elapsed_seconds=h_sisa["elapsed"],
+            verbose=True,
+        )
         r["elapsed"] = h_sisa["elapsed"]
         baseline_results["sisa"] = r
 
@@ -263,21 +351,43 @@ def run_pipeline(cfg: dict = None) -> dict:
         m_if, h_if = baseline_influence_functions(
             base_model, forget_ds, device, verbose=cfg["verbose"]
         )
-        r = full_evaluation(m_if, base_model, forget_ds, retain_ds, test_ds,
-                            device, base_forget_acc, elapsed_seconds=h_if["elapsed"],
-                            verbose=True)
+        r = full_evaluation(
+            m_if,
+            base_model,
+            forget_ds,
+            retain_ds,
+            test_ds,
+            device,
+            base_forget_acc,
+            elapsed_seconds=h_if["elapsed"],
+            verbose=True,
+        )
         r["elapsed"] = h_if["elapsed"]
         baseline_results["influence_fn"] = r
 
         if cfg["arch"] == "tabddpm":
             print("\n  3f. Random Labels")
             m_rl, h_rl = baseline_random_labels(
-                base_model, forget_ds, retain_ds, val_ds, device,
-                batch_size=cfg["batch_size"], seed=cfg["seed"], verbose=cfg["verbose"]
+                base_model,
+                forget_ds,
+                retain_ds,
+                val_ds,
+                device,
+                batch_size=cfg["batch_size"],
+                seed=cfg["seed"],
+                verbose=cfg["verbose"],
             )
-            r = full_evaluation(m_rl, base_model, forget_ds, retain_ds, test_ds,
-                                device, base_forget_acc, elapsed_seconds=h_rl["elapsed"],
-                                verbose=True)
+            r = full_evaluation(
+                m_rl,
+                base_model,
+                forget_ds,
+                retain_ds,
+                test_ds,
+                device,
+                base_forget_acc,
+                elapsed_seconds=h_rl["elapsed"],
+                verbose=True,
+            )
             r["elapsed"] = h_rl["elapsed"]
             baseline_results["random_labels"] = r
 
@@ -296,9 +406,11 @@ def run_pipeline(cfg: dict = None) -> dict:
 
             # Rebuild forget/retain with this fraction
             data_frac = prepare_datasets(
-                dataset_name=cfg["dataset"], data_dir=cfg["data_dir"],
+                dataset_name=cfg["dataset"],
+                data_dir=cfg["data_dir"],
                 forget_strategy=cfg["forget_strategy"],
-                forget_frac=frac, seed=cfg["seed"],
+                forget_frac=frac,
+                seed=cfg["seed"],
             )
             f_ds = data_frac["forget"]
             r_ds = data_frac["retain"]
@@ -306,31 +418,49 @@ def run_pipeline(cfg: dict = None) -> dict:
             # Phase 2: Forget adapter
             t_fa_start = time.time()
             model_fa, h_fa = run_forget_adapter(
-                base_model, f_ds, r_ds, device,
-                lora_r=rank, max_steps=cfg["fa_steps"],
+                base_model,
+                f_ds,
+                r_ds,
+                device,
+                lora_r=rank,
+                max_steps=cfg["fa_steps"],
                 lr=cfg.get("fa_lr", 5e-4),
                 lambda_retain=cfg.get("lambda_retain", 0.5),
                 retain_auc_min=cfg.get("retain_auc_min", 0.72),
-                batch_size=cfg["batch_size"], verbose=cfg["verbose"]
+                batch_size=cfg["batch_size"],
+                verbose=cfg["verbose"],
             )
             fa_time = time.time() - t_fa_start
 
             # Phase 3: Retain adapter
             t_ra_start = time.time()
             model_star, h_ra = run_retain_adapter(
-                model_fa, base_model, r_ds, val_ds, device,
-                lora_r=rank, epochs=cfg["ra_epochs"],
+                model_fa,
+                base_model,
+                r_ds,
+                val_ds,
+                device,
+                lora_r=rank,
+                epochs=cfg["ra_epochs"],
                 forget_ds=f_ds,
                 gamma_forget=cfg.get("gamma_forget", 1.0),
                 max_forget_recovery=cfg.get("max_forget_recovery", 0.10),
-                batch_size=cfg["batch_size"], verbose=cfg["verbose"]
+                batch_size=cfg["batch_size"],
+                verbose=cfg["verbose"],
             )
             ra_time = time.time() - t_ra_start
 
             total_time = fa_time + ra_time
             r = full_evaluation(
-                model_star, base_model, f_ds, r_ds, test_ds,
-                device, base_forget_acc, elapsed_seconds=total_time, verbose=True
+                model_star,
+                base_model,
+                f_ds,
+                r_ds,
+                test_ds,
+                device,
+                base_forget_acc,
+                elapsed_seconds=total_time,
+                verbose=True,
             )
             r["elapsed"] = total_time
             r["fa_elapsed"] = fa_time
@@ -353,44 +483,90 @@ def run_pipeline(cfg: dict = None) -> dict:
         # 5a. Phase 2 only (no retain adapter)
         print("  5a. Phase 2 only (no retain adapter)")
         m_fa_only, _ = run_forget_adapter(
-            base_model, forget_ds, retain_ds, device,
-            lora_r=rank, max_steps=cfg["fa_steps"],
+            base_model,
+            forget_ds,
+            retain_ds,
+            device,
+            lora_r=rank,
+            max_steps=cfg["fa_steps"],
             lr=cfg.get("fa_lr", 5e-4),
             lambda_retain=cfg.get("lambda_retain", 0.5),
-            retain_auc_min=cfg.get("retain_auc_min", 0.72), verbose=False
+            retain_auc_min=cfg.get("retain_auc_min", 0.72),
+            verbose=False,
         )
-        r = full_evaluation(m_fa_only, base_model, forget_ds, retain_ds, test_ds,
-                            device, base_forget_acc, verbose=True)
+        r = full_evaluation(
+            m_fa_only,
+            base_model,
+            forget_ds,
+            retain_ds,
+            test_ds,
+            device,
+            base_forget_acc,
+            verbose=True,
+        )
         ablation_results["phase2_only"] = r
 
         # 5b. Phase 3 only (no forget adapter — just distill on D_r)
         print("  5b. Phase 3 only (no forget adapter)")
         m_ra_only, _ = run_retain_adapter(
-            base_model, base_model, retain_ds, val_ds, device,
-            lora_r=rank, epochs=cfg["ra_epochs"], verbose=False
+            base_model,
+            base_model,
+            retain_ds,
+            val_ds,
+            device,
+            lora_r=rank,
+            epochs=cfg["ra_epochs"],
+            verbose=False,
         )
-        r = full_evaluation(m_ra_only, base_model, forget_ds, retain_ds, test_ds,
-                            device, base_forget_acc, verbose=True)
+        r = full_evaluation(
+            m_ra_only,
+            base_model,
+            forget_ds,
+            retain_ds,
+            test_ds,
+            device,
+            base_forget_acc,
+            verbose=True,
+        )
         ablation_results["phase3_only"] = r
 
         # 5c. Full LoRA (both phases, default rank)
         print("  5c. Full LoRA method")
         m_full_fa, _ = run_forget_adapter(
-            base_model, forget_ds, retain_ds, device,
-            lora_r=rank, max_steps=cfg["fa_steps"],
+            base_model,
+            forget_ds,
+            retain_ds,
+            device,
+            lora_r=rank,
+            max_steps=cfg["fa_steps"],
             lr=cfg.get("fa_lr", 5e-4),
             lambda_retain=cfg.get("lambda_retain", 0.5),
-            retain_auc_min=cfg.get("retain_auc_min", 0.72), verbose=False
+            retain_auc_min=cfg.get("retain_auc_min", 0.72),
+            verbose=False,
         )
         m_full, _ = run_retain_adapter(
-            m_full_fa, base_model, retain_ds, val_ds, device,
-            lora_r=rank, epochs=cfg["ra_epochs"],
+            m_full_fa,
+            base_model,
+            retain_ds,
+            val_ds,
+            device,
+            lora_r=rank,
+            epochs=cfg["ra_epochs"],
             forget_ds=forget_ds,
             gamma_forget=cfg.get("gamma_forget", 1.0),
-            max_forget_recovery=cfg.get("max_forget_recovery", 0.10), verbose=False
+            max_forget_recovery=cfg.get("max_forget_recovery", 0.10),
+            verbose=False,
         )
-        r = full_evaluation(m_full, base_model, forget_ds, retain_ds, test_ds,
-                            device, base_forget_acc, verbose=True)
+        r = full_evaluation(
+            m_full,
+            base_model,
+            forget_ds,
+            retain_ds,
+            test_ds,
+            device,
+            base_forget_acc,
+            verbose=True,
+        )
         ablation_results["full_lora"] = r
 
     all_results["ablation"] = ablation_results
@@ -404,52 +580,80 @@ def run_pipeline(cfg: dict = None) -> dict:
         print("\nStep 6: MIA attack experiment")
         rank = cfg["lora_rank_default"]
 
-        # Run LoRA unlearning with default rank
         print("  Running LoRA unlearn for MIA evaluation...")
         m_fa, _ = run_forget_adapter(
-            base_model, forget_ds, retain_ds, device,
-            lora_r=rank, max_steps=cfg["fa_steps"],
+            base_model,
+            forget_ds,
+            retain_ds,
+            device,
+            lora_r=rank,
+            max_steps=cfg["fa_steps"],
             lr=cfg.get("fa_lr", 5e-4),
             lambda_retain=cfg.get("lambda_retain", 0.5),
-            retain_auc_min=cfg.get("retain_auc_min", 0.72), verbose=False
+            retain_auc_min=cfg.get("retain_auc_min", 0.72),
+            verbose=False,
+            noise_injection=cfg.get("mia_noise_injection", True),
+            noise_scale=cfg.get("mia_noise_scale", 0.02),
         )
         m_star, _ = run_retain_adapter(
-            m_fa, base_model, retain_ds, val_ds, device,
-            lora_r=rank, epochs=cfg["ra_epochs"],
+            m_fa,
+            base_model,
+            retain_ds,
+            val_ds,
+            device,
+            lora_r=rank,
+            epochs=cfg["ra_epochs"],
             forget_ds=forget_ds,
             gamma_forget=cfg.get("gamma_forget", 1.0),
-            max_forget_recovery=cfg.get("max_forget_recovery", 0.10), verbose=False
+            max_forget_recovery=cfg.get("max_forget_recovery", 0.08),
+            verbose=False,
         )
 
-        # Shadow model MIA
-        print("  Shadow model MIA on M* (LoRA unlearn)...")
-        mia_lora = run_mia(
-            m_star, forget_ds, retain_ds, full_train, device,
-            n_shadow=cfg["n_shadow_mia"], verbose=cfg["verbose"]
-        )
-        mia_results["lora_shadow_mia"] = {
-            "mia_score": mia_lora["mia_score"],
-            "mia_auc": mia_lora["mia_auc"],
-            "retain_mia": mia_lora["retain_mia"],
-        }
-
-        # Loss-based MIA (fast)
-        print("  Loss-based MIA...")
-        mia_loss = loss_based_mia(m_star, forget_ds, retain_ds, device,
-                                  verbose=cfg["verbose"])
-        mia_results["lora_loss_mia"] = mia_loss
-
-        # MIA on base model (upper bound — should be ~100%)
-        print("  MIA on base model (upper bound)...")
-        mia_base = loss_based_mia(base_model, forget_ds, retain_ds, device,
-                                  verbose=cfg["verbose"])
-        mia_results["base_loss_mia"] = mia_base
-
-        # MIA on full retrain (lower bound — should be ~50%)
+        # Get retrain model as LiRA reference (if available)
+        retrain_ref = None
         if "full_retrain" in baseline_results:
-            print("  MIA on full retrain (lower bound)...")
-            # full retrain model not stored — skip for now
-            pass
+            # Re-run retrain to get the model object (not stored above — fix: store it)
+            # If you store m_retrain in Step 3a, pass it here directly.
+            retrain_ref = baseline_results.get("_full_retrain_model", None)
+
+        # Full MIA suite (replaces individual run_mia + loss_based_mia calls)
+        suite = run_full_mia_suite(
+            target_model=m_star,
+            forget_ds=forget_ds,
+            retain_ds=retain_ds,
+            train_ds=full_train,
+            device=device,
+            reference_model=retrain_ref,  # LiRA — needs retrain model
+            run_lira=retrain_ref is not None,
+            run_relearning=cfg.get("run_relearning_mia", True),
+            relearning_steps=cfg.get("relearning_steps", 20),
+            calibrated_shadow=cfg.get("calibrated_shadow", True),  # fairer on small D_f
+            report_ci=True,
+            n_shadow=cfg["n_shadow_mia"],
+            verbose=cfg["verbose"],
+        )
+
+        # Flatten for results dict / summary table
+        mia_results["lora_loss_mia"] = suite["loss_mia"]
+        mia_results["lora_shadow_mia"] = {
+            "mia_score": suite["shadow_mia"]["mia_score"],
+            "mia_auc": suite["shadow_mia"]["mia_auc"],
+            "ci_mean": suite["shadow_mia"]["ci_mean"],
+            "ci_std": suite["shadow_mia"]["ci_std"],
+        }
+        if "lira" in suite:
+            mia_results["lora_lira"] = suite["lira"]
+        if "relearning_mia" in suite:
+            mia_results["lora_relearning"] = {
+                "relearn_gain": suite["relearning_mia"]["relearn_gain"],
+                "curve": suite["relearning_mia"],
+            }
+
+        # MIA on base model (upper bound)
+        print("  MIA on base model (upper bound)...")
+        mia_results["base_loss_mia"] = loss_based_mia(
+            base_model, forget_ds, retain_ds, device, verbose=cfg["verbose"]
+        )
 
     all_results["mia"] = mia_results
 
@@ -457,8 +661,7 @@ def run_pipeline(cfg: dict = None) -> dict:
     # Save results
     # ────────────────────────────────────────
     results_path = os.path.join(
-        cfg["results_dir"],
-        f"results_{cfg['dataset']}_{cfg['arch']}.json"
+        cfg["results_dir"], f"results_{cfg['dataset']}_{cfg['arch']}.json"
     )
     with open(results_path, "w") as f:
         json.dump(_jsonify(all_results), f, indent=2)
@@ -485,40 +688,75 @@ def _jsonify(obj):
     elif obj is None or isinstance(obj, (int, float, str, bool)):
         return obj
     else:
-        return str(obj)
+        return None  # safely skip model objects and other non-serializable types
 
 
 def _print_summary(results: dict, cfg: dict):
     print(f"\n{'='*80}")
     print(f"RESULTS SUMMARY — {cfg['dataset']} / {cfg['arch']}")
     print(f"{'='*80}")
-    print(f"{'Method':<25} {'ForgetAUC':>10} {'ForgetAcc':>10} {'RetainAUC':>10} {'TestAUC':>10} {'KL':>8} {'Time(s)':>9}")
+    print(
+        f"{'Method':<25} {'ForgetAUC':>10} {'ForgetAcc':>10} {'RetainAUC':>10} "
+        f"{'TestAUC':>10} {'KL':>8} {'Time(s)':>9}"
+    )
     print("-" * 80)
 
     # Base model
     if "base_forget_acc" in results:
-        print(f"{'Base Model':<25} {results.get('base_forget_auc', float('nan')):>10.4f} "
-              f"{results['base_forget_acc']:>10.4f} "
-              f"{'N/A':>10} {results.get('base_test_auc', 0):>10.4f} {'N/A':>8} {'N/A':>9}")
+        print(
+            f"{'Base Model':<25} {results.get('base_forget_auc', float('nan')):>10.4f} "
+            f"{results['base_forget_acc']:>10.4f} "
+            f"{'N/A':>10} {results.get('base_test_auc', 0):>10.4f} {'N/A':>8} {'N/A':>9}"
+        )
 
     for method, r in results.get("baselines", {}).items():
-        print(f"{method:<25} {r.get('forget_auc', float('nan')):>10.4f} "
-              f"{r.get('forget_acc', 0):>10.4f} "
-              f"{r.get('retain_auc', 0):>10.4f} {r.get('test_auc', 0):>10.4f} "
-              f"{r.get('kl_div', 0):>8.4f} {r.get('elapsed', 0):>9.1f}")
+        # Skip internal keys (e.g. _full_retrain_model) and non-dict entries
+        if method.startswith("_") or not isinstance(r, dict):
+            continue
+        print(
+            f"{method:<25} {r.get('forget_auc', float('nan')):>10.4f} "
+            f"{r.get('forget_acc', 0):>10.4f} "
+            f"{r.get('retain_auc', 0):>10.4f} {r.get('test_auc', 0):>10.4f} "
+            f"{r.get('kl_div', 0):>8.4f} {r.get('elapsed', 0):>9.1f}"
+        )
 
     for key, r in results.get("lora", {}).items():
         label = f"LoRA-{key}"
-        print(f"{label:<25} {r.get('forget_auc', float('nan')):>10.4f} "
-              f"{r.get('forget_acc', 0):>10.4f} "
-              f"{r.get('retain_auc', 0):>10.4f} {r.get('test_auc', 0):>10.4f} "
-              f"{r.get('kl_div', 0):>8.4f} {r.get('elapsed', 0):>9.1f}")
+        print(
+            f"{label:<25} {r.get('forget_auc', float('nan')):>10.4f} "
+            f"{r.get('forget_acc', 0):>10.4f} "
+            f"{r.get('retain_auc', 0):>10.4f} {r.get('test_auc', 0):>10.4f} "
+            f"{r.get('kl_div', 0):>8.4f} {r.get('elapsed', 0):>9.1f}"
+        )
 
     print("=" * 80)
 
     # MIA summary
-    if results.get("mia"):
+    mia = results.get("mia", {})
+    if mia:
         print("\nMIA Results (goal: ≈0.5)")
-        for key, r in results["mia"].items():
-            score = r.get("mia_score", r.get("mia_score", "N/A"))
-            print(f"  {key}: MIA score = {score:.4f}")
+        for key, r in mia.items():
+            if not isinstance(r, dict):
+                continue
+            score = r.get("mia_score")
+            if score is not None:
+                print(f"  {key}: MIA score = {score:.4f}")
+
+        if mia.get("lora_lira"):
+            lira = mia["lora_lira"]
+            print(
+                f"  lora_lira: AUC = {lira['lira_auc']:.4f}  "
+                f"acc = {lira['lira_acc']:.4f}  (primary metric)"
+            )
+
+        if mia.get("lora_relearning"):
+            gain = mia["lora_relearning"]["relearn_gain"]
+            verdict = "✓ certified" if abs(gain) < 0.1 else "✗ superficial"
+            print(f"  lora_relearning: gain = {gain:+.4f}  {verdict}")
+
+        shadow = mia.get("lora_shadow_mia", {})
+        if isinstance(shadow, dict) and shadow.get("ci_std") is not None:
+            print(
+                f"  lora_shadow_mia: {shadow['mia_score']:.4f} ± {shadow['ci_std']:.4f}  "
+                f"(high std = unreliable on small D_f)"
+            )

@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from data_prep import prepare_all
 from evaluation.fairness import build_age_groups, compute_delta_eo
-from evaluation.mia import run_mia
+from evaluation.kaustav_mia import run_mia
 from evaluation.metrics import (
     compute_ece,
     compute_forget_accuracy,
@@ -159,7 +159,9 @@ def _normalize_method_selection(methods):
         return None
     unknown = sorted(set(cleaned) - set(ALL_METHODS))
     if unknown:
-        raise ValueError(f"Unknown methods requested: {unknown}. Valid methods: {ALL_METHODS}")
+        raise ValueError(
+            f"Unknown methods requested: {unknown}. Valid methods: {ALL_METHODS}"
+        )
     return set(cleaned)
 
 
@@ -175,6 +177,7 @@ def _model_factory(cfg, num_num_features, cat_dims, device):
             n_layers=cfg["n_layers"],
             dropout=cfg["dropout"],
         )
+
     return factory
 
 
@@ -230,7 +233,9 @@ def _evaluate_method(
     cfg,
     device,
 ):
-    config_for_relearn = {"original_forget_acc": compute_forget_accuracy(base_model, forget_ds, device)}
+    config_for_relearn = {
+        "original_forget_acc": compute_forget_accuracy(base_model, forget_ds, device)
+    }
     changed, total, pct = count_updated_params(base_model, unlearned_model)
     mia = run_mia(
         unlearned_model,
@@ -242,8 +247,12 @@ def _evaluate_method(
         verbose=False,
     )
     if retrained_model is not None:
-        js_divergence = compute_js_divergence(unlearned_model, retrained_model, test_ds, device)
-        kl_divergence = compute_kl_divergence(unlearned_model, retrained_model, test_ds, device)
+        js_divergence = compute_js_divergence(
+            unlearned_model, retrained_model, test_ds, device
+        )
+        kl_divergence = compute_kl_divergence(
+            unlearned_model, retrained_model, test_ds, device
+        )
     else:
         js_divergence = np.nan
         kl_divergence = np.nan
@@ -252,14 +261,20 @@ def _evaluate_method(
         "method": method_name,
         "mia_score": mia["mia_score"],
         "forget_accuracy": compute_forget_accuracy(unlearned_model, forget_ds, device),
-        "forget_confidence": compute_forget_confidence(unlearned_model, forget_ds, device),
+        "forget_confidence": compute_forget_confidence(
+            unlearned_model, forget_ds, device
+        ),
         "js_divergence": js_divergence,
         "kl_divergence": kl_divergence,
-        "relearn_steps": compute_relearn_time(unlearned_model, forget_ds, None, config_for_relearn, device),
+        "relearn_steps": compute_relearn_time(
+            unlearned_model, forget_ds, None, config_for_relearn, device
+        ),
         "retain_auc": compute_retain_auc(unlearned_model, retain_ds, device),
         "test_auc": compute_test_auc(unlearned_model, test_ds, device),
         "wall_clock_seconds": elapsed,
-        "speedup_vs_retrain": (retrain_time / max(elapsed, 1e-8)) if retrain_time is not None else np.nan,
+        "speedup_vs_retrain": (
+            (retrain_time / max(elapsed, 1e-8)) if retrain_time is not None else np.nan
+        ),
         "changed_params": changed,
         "total_params": total,
         "pct_params_changed": pct,
@@ -272,7 +287,11 @@ def run_all_methods(cfg):
     _set_seed(cfg["seed"])
     device = _get_device()
     selected_methods = _normalize_method_selection(cfg.get("methods"))
-    if selected_methods and "random_labels" in selected_methods and cfg["arch"] != "tabddpm":
+    if (
+        selected_methods
+        and "random_labels" in selected_methods
+        and cfg["arch"] != "tabddpm"
+    ):
         raise ValueError("random_labels is only enabled for arch='tabddpm'")
     data = prepare_all(
         dataset_name=cfg["dataset"],
@@ -290,7 +309,9 @@ def run_all_methods(cfg):
     cat_dims = data["cat_dims"]
     num_num_features = data["num_num_features"]
     model_factory = _model_factory(cfg, num_num_features, cat_dims, device)
-    base_model, _ = _train_or_load_base_model(cfg, model_factory, full_train, val_ds, device)
+    base_model, _ = _train_or_load_base_model(
+        cfg, model_factory, full_train, val_ds, device
+    )
     fairness_groups = build_age_groups(cfg["dataset"], test_ds)
 
     results = []
@@ -334,7 +355,9 @@ def run_all_methods(cfg):
     if selected_methods is None or "gradient_ascent" in selected_methods:
         method_specs.append(("gradient_ascent", gradient_ascent_unlearn, cfg["ga"]))
     if selected_methods is None or "finetune_retain" in selected_methods:
-        method_specs.append(("finetune_retain", finetune_retain_unlearn, cfg["finetune_retain"]))
+        method_specs.append(
+            ("finetune_retain", finetune_retain_unlearn, cfg["finetune_retain"])
+        )
     if selected_methods is None or "influence_fn" in selected_methods:
         method_specs.append(("influence_fn", influence_unlearn, cfg["influence_fn"]))
     if selected_methods is None or "scrub" in selected_methods:
@@ -359,7 +382,9 @@ def run_all_methods(cfg):
             gd_cfg = dict(cfg["graddiff"])
             gd_cfg["alpha"] = alpha
             start = time.perf_counter()
-            candidate = gradient_diff_unlearn(base_model, forget_ds, retain_ds, val_ds, gd_cfg, device)
+            candidate = gradient_diff_unlearn(
+                base_model, forget_ds, retain_ds, val_ds, gd_cfg, device
+            )
             elapsed = time.perf_counter() - start
             candidate_auc = compute_retain_auc(candidate, retain_ds, device)
             if candidate_auc > best_graddiff_auc:
@@ -390,7 +415,9 @@ def run_all_methods(cfg):
 
     for method_name, method_fn, method_cfg in method_specs:
         start = time.perf_counter()
-        unlearned_model = method_fn(base_model, forget_ds, retain_ds, val_ds, method_cfg, device)
+        unlearned_model = method_fn(
+            base_model, forget_ds, retain_ds, val_ds, method_cfg, device
+        )
         elapsed = time.perf_counter() - start
         _save_unlearned_model(unlearned_model, method_name, cfg)
         results.append(
@@ -412,12 +439,16 @@ def run_all_methods(cfg):
         )
 
     if not results:
-        raise RuntimeError("No results were produced. Check the requested methods and architecture.")
+        raise RuntimeError(
+            "No results were produced. Check the requested methods and architecture."
+        )
 
     df = pd.DataFrame(results)
     os.makedirs(os.path.join("results", "runs"), exist_ok=True)
     timestamp = time.strftime("%Y%m%d_%H%M%S", time.gmtime())
-    run_name = f"baselines_{cfg['dataset']}_{cfg['forget_strategy']}_{cfg['arch']}_{timestamp}"
+    run_name = (
+        f"baselines_{cfg['dataset']}_{cfg['forget_strategy']}_{cfg['arch']}_{timestamp}"
+    )
     run_dir = create_run_report_dir(
         os.path.join("results", "runs"),
         run_name,

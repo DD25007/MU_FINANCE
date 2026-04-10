@@ -44,5 +44,5 @@ from unlearning.baselines import (
 )
 
 # LoRA-based methods
-from unlearning.forget_adapter import run_forget_adapter
-from unlearning.retain_adapter import run_retain_adapter
+from unlearning.kaustav_forget_adapter import run_forget_adapter
+from unlearning.kaustav_retain_adapter import run_retain_adapter
