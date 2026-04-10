@@ -4,3 +4,6 @@ __pycache__/
 
 checkpoints/
 models/checkpoints/
+
+.*
+data/
