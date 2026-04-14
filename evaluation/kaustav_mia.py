@@ -35,7 +35,7 @@ from sklearn.metrics import accuracy_score, roc_auc_score
 from typing import Optional
 
 from data.datasets import CreditDataset, make_loader, subset_dataset
-from evaluation.metrics import get_predictions
+from evaluation.kaustav_metrics import get_predictions
 
 
 # ─────────────────────────────────────────────────────────────────────────────
