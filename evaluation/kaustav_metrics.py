@@ -151,23 +151,22 @@ def compute_js_divergence(
 ) -> float:
     probs_a, _ = get_predictions(model_a, D_test, device)
     probs_b, _ = get_predictions(model_b, D_test, device)
+    # Ensure probabilities are in valid range [0,1]
+    probs_a = np.clip(probs_a, 1e-10, 1.0 - 1e-10)
+    probs_b = np.clip(probs_b, 1e-10, 1.0 - 1e-10)
     dist_a = np.column_stack([1.0 - probs_a, probs_a])
     dist_b = np.column_stack([1.0 - probs_b, probs_b])
-
-    # Compute JS divergence with NaN handling
+    # Normalize distributions to ensure they sum to 1
+    dist_a = dist_a / dist_a.sum(axis=1, keepdims=True)
+    dist_b = dist_b / dist_b.sum(axis=1, keepdims=True)
+    # Compute JS divergence with proper error handling
     js = []
     for i in range(len(dist_a)):
-        try:
-            jsd = jensenshannon(dist_a[i], dist_b[i]) ** 2
-            # Replace NaN or inf with 0 (distributions are identical or very close)
-            if np.isnan(jsd) or np.isinf(jsd):
-                jsd = 0.0
-            js.append(jsd)
-        except (RuntimeWarning, ValueError):
-            # If computation fails, use 0
-            js.append(0.0)
-
-    return float(np.nan_to_num(np.mean(js), nan=0.0, posinf=0.0))
+        with np.errstate(invalid="ignore"):
+            js_val = jensenshannon(dist_a[i], dist_b[i]) ** 2
+            js_val = np.nan_to_num(js_val, nan=0.0)
+        js.append(js_val)
+    return float(np.mean(js))
 
 
 def relearn_time(
