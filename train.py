@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 
 from data.datasets import CreditDataset, make_loader
 from models.ft_transformer import FTTransformer
-from models.tab_transformer import TabTransformer
+from models.kaustav_tab_transformer import TabTransformer
 from models.tabddpm import TabDDPM
 from models.lora import count_parameters
 
@@ -24,9 +24,17 @@ from models.lora import count_parameters
 # Model factory
 # ──────────────────────────────────────────────
 
-def build_model(arch: str, num_num_features: int, cat_dims, device: torch.device,
-                d_model: int = 64, n_heads: int = 4, n_layers: int = 3,
-                dropout: float = 0.1) -> nn.Module:
+
+def build_model(
+    arch: str,
+    num_num_features: int,
+    cat_dims,
+    device: torch.device,
+    d_model: int = 64,
+    n_heads: int = 4,
+    n_layers: int = 3,
+    dropout: float = 0.1,
+) -> nn.Module:
     effective_heads = max(1, min(n_heads, d_model))
     while d_model % effective_heads != 0 and effective_heads > 1:
         effective_heads -= 1
@@ -74,6 +82,7 @@ def build_model(arch: str, num_num_features: int, cat_dims, device: torch.device
 # ──────────────────────────────────────────────
 # Training utilities
 # ──────────────────────────────────────────────
+
 
 def compute_loss(model: nn.Module, batch, device: torch.device, criterion):
     x_num, x_cat, y = batch
@@ -129,6 +138,7 @@ def evaluate(model: nn.Module, loader, device: torch.device):
 # Main training loop
 # ──────────────────────────────────────────────
 
+
 def train_model(
     model: nn.Module,
     train_ds: CreditDataset,
@@ -180,8 +190,10 @@ def train_model(
             no_improve += 1
 
         if verbose and epoch % 10 == 0:
-            print(f"  Epoch {epoch:3d} | train_loss={total_loss/len(train_loader):.4f} "
-                  f"val_auc={val_metrics['auc']:.4f} val_acc={val_metrics['acc']:.4f}")
+            print(
+                f"  Epoch {epoch:3d} | train_loss={total_loss/len(train_loader):.4f} "
+                f"val_auc={val_metrics['auc']:.4f} val_acc={val_metrics['acc']:.4f}"
+            )
 
         if no_improve >= patience:
             if verbose:

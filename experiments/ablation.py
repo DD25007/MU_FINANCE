@@ -21,7 +21,7 @@ from data.datasets import prepare_datasets
 from train import build_model, train_model, load_model, evaluate
 from unlearning.kaustav_forget_adapter import run_forget_adapter
 from unlearning.kaustav_retain_adapter import run_retain_adapter
-from evaluation.metrics import full_evaluation, forget_set_accuracy, compute_auc
+from evaluation.kaustav_metrics import full_evaluation, forget_set_accuracy, compute_auc
 from evaluation.kaustav_mia import loss_based_mia
 
 

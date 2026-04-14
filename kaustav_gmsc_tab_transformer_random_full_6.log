@@ -1,0 +1,84 @@
+/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
+  return np.sqrt(js / 2.0)
+/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
+  return np.sqrt(js / 2.0)
+/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
+  return np.sqrt(js / 2.0)
+/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
+  return np.sqrt(js / 2.0)
+
+============================================================
+LoRA-Credit-Unlearn Pipeline
+  dataset=gmsc | arch=tab_transformer | device=cuda
+============================================================
+
+Step 1: Data preparation
+[Data] gmsc | train=78597 val=16842 test=16843
+[Data] forget=7859 (random) | retain=70738
+
+Step 2: Train base model M
+  Loading cached checkpoint from checkpoints/base_gmsc_tab_transformer.pt
+  Base model | test_auc=0.8376 | forget_auc=0.8560 | forget_acc=0.9407
+  [Config] Auto-tuned for forget_set=7859: fa_steps 100→183, fa_lr 5e-04→2e-03, lambda_retain 0.5→0.2, ra_epochs 25→40
+
+Step 3: Baselines
+
+  3a. Full Retrain
+  [Baseline] Full Retrain on D_r...
+    Elapsed: 309.0s
+    forget_acc=0.9394 retain_auc=0.8527 test_auc=0.8360 kl=0.0009 js=0.0002 time=309.0s
+
+  3b. Naïve Gradient Ascent
+  [Baseline] Naïve Gradient Ascent...
+    forget_acc=0.4208 retain_auc=0.6435 test_auc=0.6213 kl=0.6079 js=0.1748 time=128.4s
+
+  3c. Fine-tune on D_r
+  [Baseline] Fine-tune on D_r...
+    forget_acc=0.9407 retain_auc=0.8528 test_auc=0.8372 kl=0.0003 js=0.0001 time=28.1s
+
+  3d. SISA
+  [Baseline] SISA with 4 shards...
+    Affected shards: [0, 1, 2, 3] (out of 4)
+    SISA elapsed: 115.4s
+    forget_acc=0.9403 retain_auc=0.8449 test_auc=0.8307 kl=0.0019 js=0.0005 time=115.4s
+
+  3e. Influence Functions
+  [Baseline] Influence Functions (Newton-step approx)...
+    Influence fn elapsed: 0.4s
+    forget_acc=0.9407 retain_auc=0.8521 test_auc=0.8375 kl=0.0000 js=0.0000 time=0.4s
+
+Step 4: LoRA-Credit-Unlearn method
+
+  LoRA rank=4 forget_frac=5%
+[Data] gmsc | train=78597 val=16842 test=16843
+[Data] forget=3929 (random) | retain=74668
+  [ForgetAdapter] LoRA params: 1,320 / 20,941 (6.30%)
+    step   1 | forget_auc=0.8678 forget_acc=0.943 retain_auc=0.8517
+    step   5 | forget_auc=0.8637 forget_acc=0.943 retain_auc=0.8510
+    step  10 | forget_auc=0.8514 forget_acc=0.944 retain_auc=0.8458
+    step  15 | forget_auc=0.8296 forget_acc=0.943 retain_auc=0.8323
+    step  20 | forget_auc=0.7758 forget_acc=0.942 retain_auc=0.7922
+    step  25 | forget_auc=0.6542 forget_acc=0.934 retain_auc=0.6923
+    [ForgetAdapter] Retain AUC below 0.72 — stopping early
+  [ForgetAdapter] Done in 24.1s
+  [RetainAdapter] LoRA params: 768 / 21,709 (3.54%)
+  [RetainAdapter] Phase2 end forget_auc=0.7758 → ceiling=0.8558  (max_forget_recovery=0.08)
+Traceback (most recent call last):
+  File "/storage/dd25007/MU_FINANCE/main.py", line 121, in <module>
+    main()
+  File "/storage/dd25007/MU_FINANCE/main.py", line 116, in main
+    results = run_pipeline(cfg)
+              ^^^^^^^^^^^^^^^^^
+  File "/storage/dd25007/MU_FINANCE/experiments/run_pipeline.py", line 437, in run_pipeline
+    model_star, h_ra = run_retain_adapter(
+                       ^^^^^^^^^^^^^^^^^^^
+  File "/storage/dd25007/MU_FINANCE/unlearning/kaustav_retain_adapter.py", line 353, in run_retain_adapter
+    loss.backward()
+  File "/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/torch/_tensor.py", line 631, in backward
+    torch.autograd.backward(
+  File "/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/torch/autograd/__init__.py", line 381, in backward
+    _engine_run_backward(
+  File "/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/torch/autograd/graph.py", line 869, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn

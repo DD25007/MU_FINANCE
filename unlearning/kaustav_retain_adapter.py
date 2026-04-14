@@ -218,37 +218,54 @@ def run_retain_adapter(
     from models.lora import LoRALinear
 
     def _add_second_lora(module, r, alpha, dropout):
+        """
+        Wrap existing LoRALinear layers with a second LoRA (Phase 3 adapter).
+        Targets ANY LoRALinear found in the model, regardless of layer name —
+        this covers both q_proj/v_proj (transformer path) and MLP[0]/MLP[3]
+        (numerical-only path added for TabTransformer fix).
+        """
         lora_params = []
         for name, child in list(module.named_children()):
-            if name in ("q_proj", "v_proj"):
-                if isinstance(child, LoRALinear):
-                    child.lora_A.requires_grad = False
-                    child.lora_B.requires_grad = False
-                    new_lora = LoRALinear(
-                        _make_dummy_linear(
-                            child.out_features,
-                            child.in_features,
-                            device=child.weight.device,
-                        ),
-                        r=r,
-                        lora_alpha=alpha,
-                        lora_dropout=dropout,
-                    )
-                    setattr(module, name, _CombinedAdapter(child, new_lora))
-                    lora_params.extend(new_lora.trainable_parameters())
-                elif isinstance(child, nn.Linear):
-                    new_lora = LoRALinear(
-                        child, r=r, lora_alpha=alpha, lora_dropout=dropout
-                    )
-                    setattr(module, name, new_lora)
-                    lora_params.extend(new_lora.trainable_parameters())
+            if isinstance(child, LoRALinear):
+                # Freeze the Phase 2 LoRA weights
+                child.lora_A.requires_grad = False
+                child.lora_B.requires_grad = False
+                # Wrap with a second LoRA adapter
+                new_lora = LoRALinear(
+                    _make_dummy_linear(
+                        child.out_features,
+                        child.in_features,
+                        device=child.weight.device,
+                    ),
+                    r=r,
+                    lora_alpha=alpha,
+                    lora_dropout=dropout,
+                )
+                setattr(module, name, _CombinedAdapter(child, new_lora))
+                lora_params.extend(new_lora.trainable_parameters())
+            elif isinstance(child, nn.Linear):
+                # Shouldn't be reached (Phase 2 should have wrapped these),
+                # but handle gracefully just in case
+                new_lora = LoRALinear(
+                    child, r=r, lora_alpha=alpha, lora_dropout=dropout
+                )
+                setattr(module, name, new_lora)
+                lora_params.extend(new_lora.trainable_parameters())
             else:
+                # Recurse into sub-modules (blocks, Sequential, etc.)
                 lora_params.extend(_add_second_lora(child, r, alpha, dropout))
         return lora_params
 
     retain_lora_params = _add_second_lora(model_ra, lora_r, lora_alpha, lora_dropout)
     for p in retain_lora_params:
         p.requires_grad = True
+
+    # Guard
+    if not retain_lora_params:
+        raise RuntimeError(
+            "[RetainAdapter] No LoRA layers found to wrap. "
+            "Ensure attach_lora() was called before run_retain_adapter()."
+        )
 
     total_p, trainable_p = count_parameters(model_ra)
     if verbose:

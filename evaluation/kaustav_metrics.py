@@ -153,8 +153,21 @@ def compute_js_divergence(
     probs_b, _ = get_predictions(model_b, D_test, device)
     dist_a = np.column_stack([1.0 - probs_a, probs_a])
     dist_b = np.column_stack([1.0 - probs_b, probs_b])
-    js = [jensenshannon(dist_a[i], dist_b[i]) ** 2 for i in range(len(dist_a))]
-    return float(np.mean(js))
+
+    # Compute JS divergence with NaN handling
+    js = []
+    for i in range(len(dist_a)):
+        try:
+            jsd = jensenshannon(dist_a[i], dist_b[i]) ** 2
+            # Replace NaN or inf with 0 (distributions are identical or very close)
+            if np.isnan(jsd) or np.isinf(jsd):
+                jsd = 0.0
+            js.append(jsd)
+        except (RuntimeWarning, ValueError):
+            # If computation fails, use 0
+            js.append(0.0)
+
+    return float(np.nan_to_num(np.mean(js), nan=0.0, posinf=0.0))
 
 
 def relearn_time(

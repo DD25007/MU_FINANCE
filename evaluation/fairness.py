@@ -16,7 +16,7 @@ import torch.nn as nn
 from typing import Optional
 
 from data.datasets import CreditDataset, make_loader
-from evaluation.metrics import get_predictions
+from evaluation.kaustav_metrics import get_predictions
 
 
 def compute_delta_eo(model, test_ds, groups, device, threshold=0.5):
@@ -39,8 +39,9 @@ def compute_delta_eo(model, test_ds, groups, device, threshold=0.5):
     labels = labels.astype(int)
     groups = np.asarray(groups).astype(int)
 
-    assert len(probs) == len(groups), \
-        f"Mismatch: {len(probs)} predictions vs {len(groups)} group labels"
+    assert len(probs) == len(
+        groups
+    ), f"Mismatch: {len(probs)} predictions vs {len(groups)} group labels"
 
     group_vals = np.unique(groups)
     if len(group_vals) < 2:
