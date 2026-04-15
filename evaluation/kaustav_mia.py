@@ -371,7 +371,7 @@ def run_mia(
             )
             print(
                 f"  [MIA-CI] Mean={ci_mean:.4f} ± Std={ci_std:.4f}  "
-                f"← High std with n_forget=70 means shadow MIA is unreliable."
+                f"<- High std with n_forget=70 means shadow MIA is unreliable."
             )
             print(f"           Recommend reporting LiRA AUC instead as primary metric.")
 
@@ -461,10 +461,10 @@ def run_full_mia_suite(
     Runs all MIA variants and returns a unified results dict.
 
     Recommended reporting order for the paper:
-      1. loss_mia_auc       ← most reliable for small datasets [OPT-III]
-      2. lira_auc           ← most powerful if reference model available [OPT-I]
-      3. relearn_gain       ← most interpretable [OPT-II]
-      4. shadow_mia_score   ← report with CI to show it's noisy [OPT-V]
+      1. loss_mia_auc       <- most reliable for small datasets [OPT-III]
+      2. lira_auc           <- most powerful if reference model available [OPT-I]
+      3. relearn_gain       <- most interpretable [OPT-II]
+      4. shadow_mia_score   <- report with CI to show it's noisy [OPT-V]
     """
     results = {}
 

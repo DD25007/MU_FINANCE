@@ -27,12 +27,14 @@ from torch.utils.data import Dataset, DataLoader, Subset
 # Data container
 # ──────────────────────────────────────────────
 
+
 @dataclass
 class CreditDataset(Dataset):
     """Holds preprocessed numeric + categorical tensors and labels."""
+
     x_num: Optional[torch.Tensor]  # (N, num_num_features)
     x_cat: Optional[torch.Tensor]  # (N, num_cat_features) — integer indices
-    y: torch.Tensor                # (N,) — float32 binary labels
+    y: torch.Tensor  # (N,) — float32 binary labels
     cat_dims: List[int] = field(default_factory=list)  # cardinalities per cat feature
     num_num_features: int = 0
     feature_names: List[str] = field(default_factory=list)
@@ -42,21 +44,36 @@ class CreditDataset(Dataset):
 
     def __getitem__(self, idx):
         x_num = self.x_num[idx] if self.x_num is not None else torch.tensor([])
-        x_cat = self.x_cat[idx] if self.x_cat is not None else torch.tensor([], dtype=torch.long)
+        x_cat = (
+            self.x_cat[idx]
+            if self.x_cat is not None
+            else torch.tensor([], dtype=torch.long)
+        )
         return x_num, x_cat, self.y[idx]
 
 
-def make_loader(dataset: CreditDataset, batch_size: int = 256, shuffle: bool = True,
-                num_workers: int = 0) -> DataLoader:
-    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle,
-                      num_workers=num_workers, pin_memory=torch.cuda.is_available())
+def make_loader(
+    dataset: CreditDataset,
+    batch_size: int = 256,
+    shuffle: bool = True,
+    num_workers: int = 0,
+) -> DataLoader:
+    return DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=num_workers,
+        pin_memory=torch.cuda.is_available(),
+    )
 
 
 def subset_dataset(dataset: CreditDataset, indices: np.ndarray) -> CreditDataset:
     x_num = dataset.x_num[indices] if dataset.x_num is not None else None
     x_cat = dataset.x_cat[indices] if dataset.x_cat is not None else None
     return CreditDataset(
-        x_num=x_num, x_cat=x_cat, y=dataset.y[indices],
+        x_num=x_num,
+        x_cat=x_cat,
+        y=dataset.y[indices],
         cat_dims=dataset.cat_dims,
         num_num_features=dataset.num_num_features,
         feature_names=dataset.feature_names,
@@ -67,21 +84,40 @@ def subset_dataset(dataset: CreditDataset, indices: np.ndarray) -> CreditDataset
 # German Credit (UCI) — primary dataset
 # ──────────────────────────────────────────────
 
+
 def load_german_credit(data_dir: str = "data/raw") -> pd.DataFrame:
     """Load German Credit from local file or generate synthetic proxy."""
     path = os.path.join(data_dir, "german.data")
     if os.path.exists(path):
         cols = [
-            "status", "duration", "credit_history", "purpose", "amount",
-            "savings", "employment", "installment_rate", "personal_status_sex",
-            "other_debtors", "residence_since", "property", "age",
-            "other_installment", "housing", "existing_credits", "job",
-            "liable_people", "telephone", "foreign_worker", "target"
+            "status",
+            "duration",
+            "credit_history",
+            "purpose",
+            "amount",
+            "savings",
+            "employment",
+            "installment_rate",
+            "personal_status_sex",
+            "other_debtors",
+            "residence_since",
+            "property",
+            "age",
+            "other_installment",
+            "housing",
+            "existing_credits",
+            "job",
+            "liable_people",
+            "telephone",
+            "foreign_worker",
+            "target",
         ]
         df = pd.read_csv(path, sep=" ", header=None, names=cols)
         df["target"] = (df["target"] == 2).astype(int)  # 2=bad → 1, 1=good → 0
     else:
-        print("[Data] german.data not found — generating synthetic proxy (1000 samples)")
+        print(
+            "[Data] german.data not found — generating synthetic proxy (1000 samples)"
+        )
         df = _synthetic_german_credit(1000)
     return df
 
@@ -128,13 +164,28 @@ def _synthetic_german_credit(n: int = 1000, seed: int = 42) -> pd.DataFrame:
 def preprocess_german_credit(df: pd.DataFrame):
     """Preprocess German Credit: encode, normalise, return tensors + metadata."""
     cat_feature_names = [
-        "status", "credit_history", "purpose", "savings", "employment",
-        "personal_status_sex", "other_debtors", "property",
-        "other_installment", "housing", "job", "telephone", "foreign_worker"
+        "status",
+        "credit_history",
+        "purpose",
+        "savings",
+        "employment",
+        "personal_status_sex",
+        "other_debtors",
+        "property",
+        "other_installment",
+        "housing",
+        "job",
+        "telephone",
+        "foreign_worker",
     ]
     num_feature_names = [
-        "duration", "amount", "installment_rate", "residence_since",
-        "age", "existing_credits", "liable_people"
+        "duration",
+        "amount",
+        "installment_rate",
+        "residence_since",
+        "age",
+        "existing_credits",
+        "liable_people",
     ]
 
     # Encode categoricals to integers
@@ -156,17 +207,23 @@ def preprocess_german_credit(df: pd.DataFrame):
     x_cat = torch.tensor(np.stack(cat_arrays, axis=1), dtype=torch.long)
     y = torch.tensor(df["target"].values, dtype=torch.float32)
 
-    return CreditDataset(
-        x_num=x_num, x_cat=x_cat, y=y,
-        cat_dims=cat_dims,
-        num_num_features=len(num_feature_names),
-        feature_names=num_feature_names + cat_feature_names,
-    ), df["age"].values  # return age for demographic forget-set
+    return (
+        CreditDataset(
+            x_num=x_num,
+            x_cat=x_cat,
+            y=y,
+            cat_dims=cat_dims,
+            num_num_features=len(num_feature_names),
+            feature_names=num_feature_names + cat_feature_names,
+        ),
+        df["age"].values,
+    )  # return age for demographic forget-set
 
 
 # ──────────────────────────────────────────────
 # Give Me Some Credit (Kaggle)
 # ──────────────────────────────────────────────
+
 
 def load_give_me_some_credit(data_dir: str = "data/raw") -> pd.DataFrame:
     path = os.path.join(data_dir, "cs-training.csv")
@@ -180,7 +237,9 @@ def load_give_me_some_credit(data_dir: str = "data/raw") -> pd.DataFrame:
         df = df.dropna()
         df = df.reset_index(drop=True)
     else:
-        print("[Data] cs-training.csv not found — generating synthetic proxy (5000 samples)")
+        print(
+            "[Data] cs-training.csv not found — generating synthetic proxy (5000 samples)"
+        )
         df = _synthetic_gmsc(5000)
     return df
 
@@ -199,7 +258,11 @@ def _synthetic_gmsc(n: int = 5000, seed: int = 42) -> pd.DataFrame:
         "NumberOfTime60-89DaysPastDueNotWorse": rng.poisson(0.1, n),
         "NumberOfDependents": rng.randint(0, 5, n),
     }
-    logit = (data["DebtRatio"] - 2) + 0.5 * data["NumberOfTimes90DaysLate"] + rng.randn(n) * 0.3
+    logit = (
+        (data["DebtRatio"] - 2)
+        + 0.5 * data["NumberOfTimes90DaysLate"]
+        + rng.randn(n) * 0.3
+    )
     prob = 1 / (1 + np.exp(-logit))
     data["target"] = (prob > 0.5).astype(int)
     return pd.DataFrame(data)
@@ -207,11 +270,16 @@ def _synthetic_gmsc(n: int = 5000, seed: int = 42) -> pd.DataFrame:
 
 def preprocess_gmsc(df: pd.DataFrame):
     num_feature_names = [
-        "RevolvingUtilizationOfUnsecuredLines", "age",
-        "NumberOfTime30-59DaysPastDueNotWorse", "DebtRatio",
-        "MonthlyIncome", "NumberOfOpenCreditLinesAndLoans",
-        "NumberOfTimes90DaysLate", "NumberRealEstateLoansOrLines",
-        "NumberOfTime60-89DaysPastDueNotWorse", "NumberOfDependents"
+        "RevolvingUtilizationOfUnsecuredLines",
+        "age",
+        "NumberOfTime30-59DaysPastDueNotWorse",
+        "DebtRatio",
+        "MonthlyIncome",
+        "NumberOfOpenCreditLinesAndLoans",
+        "NumberOfTimes90DaysLate",
+        "NumberRealEstateLoansOrLines",
+        "NumberOfTime60-89DaysPastDueNotWorse",
+        "NumberOfDependents",
     ]
     # Clip extreme values and normalise
     num_arrays = []
@@ -225,17 +293,23 @@ def preprocess_gmsc(df: pd.DataFrame):
     x_num = torch.tensor(np.stack(num_arrays, axis=1), dtype=torch.float32)
     y = torch.tensor(df["target"].values, dtype=torch.float32)
 
-    return CreditDataset(
-        x_num=x_num, x_cat=None, y=y,
-        cat_dims=[],
-        num_num_features=len(num_feature_names),
-        feature_names=num_feature_names,
-    ), df["age"].values
+    return (
+        CreditDataset(
+            x_num=x_num,
+            x_cat=None,
+            y=y,
+            cat_dims=[],
+            num_num_features=len(num_feature_names),
+            feature_names=num_feature_names,
+        ),
+        df["age"].values,
+    )
 
 
 # ──────────────────────────────────────────────
 # Forget-set construction
 # ──────────────────────────────────────────────
+
 
 def make_forget_set_random(n: int, frac: float = 0.1, seed: int = 42) -> np.ndarray:
     """Random forget-set: frac of training indices."""
@@ -244,12 +318,16 @@ def make_forget_set_random(n: int, frac: float = 0.1, seed: int = 42) -> np.ndar
     return idx
 
 
-def make_forget_set_demographic(age_values: np.ndarray, age_threshold: int = 25) -> np.ndarray:
+def make_forget_set_demographic(
+    age_values: np.ndarray, age_threshold: int = 25
+) -> np.ndarray:
     """Forget all samples where age < threshold (young demographic)."""
     return np.where(age_values < age_threshold)[0]
 
 
-def make_forget_set_temporal(year_values: np.ndarray, start: int = 2007, end: int = 2009) -> np.ndarray:
+def make_forget_set_temporal(
+    year_values: np.ndarray, start: int = 2007, end: int = 2009
+) -> np.ndarray:
     """Forget samples from a specific time window (LendingClub)."""
     return np.where((year_values >= start) & (year_values <= end))[0]
 
@@ -257,6 +335,7 @@ def make_forget_set_temporal(year_values: np.ndarray, start: int = 2007, end: in
 # ──────────────────────────────────────────────
 # Full dataset preparation
 # ──────────────────────────────────────────────
+
 
 def prepare_datasets(
     dataset_name: str = "german",
@@ -291,8 +370,8 @@ def prepare_datasets(
     n_val = int(N * val_frac)
 
     train_idx = indices[:n_train]
-    val_idx = indices[n_train:n_train + n_val]
-    test_idx = indices[n_train + n_val:]
+    val_idx = indices[n_train : n_train + n_val]
+    test_idx = indices[n_train + n_val :]
 
     full_train = subset_dataset(dataset, train_idx)
     val_ds = subset_dataset(dataset, val_idx)
@@ -317,8 +396,16 @@ def prepare_datasets(
     forget_ds = subset_dataset(full_train, f_idx)
     retain_ds = subset_dataset(full_train, r_idx)
 
-    print(f"[Data] {dataset_name} | train={len(full_train)} val={len(val_ds)} test={len(test_ds)}")
-    print(f"[Data] forget={len(forget_ds)} ({forget_strategy}) | retain={len(retain_ds)}")
+    print(
+        f"[Data] {dataset_name} | train={len(full_train)} val={len(val_ds)} test={len(test_ds)}"
+    )
+    print(
+        f"[Data] forget={len(forget_ds)} ({forget_strategy}) | retain={len(retain_ds)}"
+    )
+    # sensitive_attr: age<25 binary flag for the full_train samples
+    sensitive_attr = None
+    if train_age is not None:
+        sensitive_attr = (train_age < 25).astype(int)  # 1=young, 0=older
 
     return {
         "full_train": full_train,
@@ -330,4 +417,8 @@ def prepare_datasets(
         "retain_indices": r_idx,
         "cat_dims": dataset.cat_dims,
         "num_num_features": dataset.num_num_features,
+        "sensitive_attr": sensitive_attr,  # <- add this
+        "forget_sensitive_attr": (
+            sensitive_attr[f_idx] if sensitive_attr is not None else None
+        ),  # <- for full_evaluation
     }

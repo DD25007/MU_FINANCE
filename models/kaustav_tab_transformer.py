@@ -108,10 +108,10 @@ class TabTransformer(nn.Module):
         cat_output_dim = self.num_cat_features * d_model
         total_dim = cat_output_dim + num_num_features
         self.mlp = nn.Sequential(
-            nn.Linear(total_dim, mlp_hidden),  # mlp[0]  ← LoRA target (numerical path)
+            nn.Linear(total_dim, mlp_hidden),  # mlp[0]  <- LoRA target (numerical path)
             nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(mlp_hidden, mlp_hidden // 2),  # mlp[3]  ← LoRA target
+            nn.Linear(mlp_hidden, mlp_hidden // 2),  # mlp[3]  <- LoRA target
             nn.ReLU(),
             nn.Linear(mlp_hidden // 2, 1),
         )

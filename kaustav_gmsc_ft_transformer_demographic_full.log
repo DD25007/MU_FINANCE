@@ -1,17 +1,3 @@
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
 
 ============================================================
 LoRA-Credit-Unlearn Pipeline
@@ -31,22 +17,22 @@ Step 3: Baselines
 
   3a. Full Retrain
   [Baseline] Full Retrain on D_r...
-    Elapsed: 456.3s
-    forget_acc=0.9241 retain_auc=0.8520 test_auc=0.8348 kl=0.0020 js=0.0005 time=456.3s
+    Elapsed: 627.5s
+    forget_acc=0.9231 retain_auc=0.8545 test_auc=0.8351 kl=0.0017 js=0.0004 time=627.5s
 
   3b. Naïve Gradient Ascent
   [Baseline] Naïve Gradient Ascent...
-    forget_acc=0.0759 retain_auc=0.6773 test_auc=0.6756 kl=2.4678 js=0.3813 time=69.5s
+    forget_acc=0.0759 retain_auc=0.6781 test_auc=0.6765 kl=2.4646 js=0.3781 time=69.7s
 
   3c. Fine-tune on D_r
   [Baseline] Fine-tune on D_r...
-    forget_acc=0.9213 retain_auc=0.8515 test_auc=0.8360 kl=0.0008 js=0.0002 time=45.6s
+    forget_acc=0.9222 retain_auc=0.8515 test_auc=0.8360 kl=0.0006 js=0.0002 time=43.9s
 
   3d. SISA
   [Baseline] SISA with 4 shards...
     Affected shards: [0, 1, 2, 3] (out of 4)
-    SISA elapsed: 105.5s
-    forget_acc=0.9204 retain_auc=0.8476 test_auc=0.8336 kl=0.0031 js=0.0007 time=105.5s
+    SISA elapsed: 104.6s
+    forget_acc=0.9194 retain_auc=0.8471 test_auc=0.8330 kl=0.0036 js=0.0009 time=104.6s
 
   3e. Influence Functions
   [Baseline] Influence Functions (Newton-step approx)...
@@ -59,253 +45,237 @@ Step 4: LoRA-Credit-Unlearn method
 [Data] gmsc | train=78597 val=16842 test=16843
 [Data] forget=1080 (demographic) | retain=77517
   [ForgetAdapter] LoRA params: 3,072 / 204,481 (1.50%)
-    step   1 | forget_auc=0.8022 forget_acc=0.927 retain_auc=0.8512
-    step   5 | forget_auc=0.8016 forget_acc=0.927 retain_auc=0.8512
-    step  10 | forget_auc=0.8012 forget_acc=0.927 retain_auc=0.8512
-    step  15 | forget_auc=0.8005 forget_acc=0.925 retain_auc=0.8511
-    step  20 | forget_auc=0.7994 forget_acc=0.919 retain_auc=0.8508
-    step  25 | forget_auc=0.7942 forget_acc=0.917 retain_auc=0.8497
-    step  30 | forget_auc=0.7862 forget_acc=0.900 retain_auc=0.8461
-    step  35 | forget_auc=0.7109 forget_acc=0.154 retain_auc=0.8259
-    step  40 | forget_auc=0.6012 forget_acc=0.076 retain_auc=0.7710
-    step  45 | forget_auc=0.3833 forget_acc=0.076 retain_auc=0.6605
+    step   1 | forget_auc=0.8025 forget_acc=0.927 retain_auc=0.8512
+    step   5 | forget_auc=0.8020 forget_acc=0.927 retain_auc=0.8512
+    step  10 | forget_auc=0.8011 forget_acc=0.927 retain_auc=0.8512
+    step  15 | forget_auc=0.8005 forget_acc=0.926 retain_auc=0.8512
+    step  20 | forget_auc=0.7988 forget_acc=0.920 retain_auc=0.8510
+    step  25 | forget_auc=0.7952 forget_acc=0.923 retain_auc=0.8507
+    step  30 | forget_auc=0.7953 forget_acc=0.915 retain_auc=0.8496
+    step  35 | forget_auc=0.7933 forget_acc=0.903 retain_auc=0.8469
+    step  40 | forget_auc=0.7900 forget_acc=0.572 retain_auc=0.8414
+    step  45 | forget_auc=0.7693 forget_acc=0.376 retain_auc=0.8200
+    step  50 | forget_auc=0.5707 forget_acc=0.077 retain_auc=0.6788
     [ForgetAdapter] Retain AUC below 0.72 — stopping early
-  [ForgetAdapter] Done in 37.9s
+  [ForgetAdapter] Done in 40.2s
   [RetainAdapter] LoRA params: 15,620 / 244,677 (6.38%)
-  [RetainAdapter] Phase2 end forget_auc=0.6012 → ceiling=0.6812  (max_forget_recovery=0.08)
-    [RetainAdapter] forget_auc=0.6974 exceeded ceiling 0.6812 — stopping early
-  [RetainAdapter] Done in 35.0s | best val AUC=-1.0000
-    forget_acc=0.0759 retain_auc=0.7710 test_auc=0.7601 kl=0.4914 js=0.1394 time=73.0s
+  [RetainAdapter] Phase2 end forget_auc=0.7693 → ceiling=0.8493  (max_forget_recovery=0.08)
+    epoch   5 | kl_loss=0.0086 val_auc=0.8318 forget_auc=0.6567 forgetting_score=0.4790
+    epoch  10 | kl_loss=0.0055 val_auc=0.8345 forget_auc=0.7739 forgetting_score=0.4829
+    epoch  15 | kl_loss=0.0045 val_auc=0.8364 forget_auc=0.6620 forgetting_score=0.4817
+    epoch  20 | kl_loss=0.0042 val_auc=0.8362 forget_auc=0.6812 forgetting_score=0.4816
+    epoch  25 | kl_loss=0.0020 val_auc=0.8361 forget_auc=0.6907 forgetting_score=0.4815
+    epoch  30 | kl_loss=0.0015 val_auc=0.8363 forget_auc=0.5922 forgetting_score=0.4816
+    epoch  35 | kl_loss=0.0013 val_auc=0.8365 forget_auc=0.5506 forgetting_score=0.4818
+    epoch  40 | kl_loss=0.0012 val_auc=0.8364 forget_auc=0.6005 forgetting_score=0.4817
+  [RetainAdapter] Done in 1235.3s | best val AUC=0.8365
+    forget_acc=0.0759 retain_auc=0.8501 test_auc=0.8301 kl=0.0072 js=0.0021 time=1275.7s
 
   LoRA rank=4 forget_frac=10%
 [Data] gmsc | train=78597 val=16842 test=16843
 [Data] forget=1080 (demographic) | retain=77517
   [ForgetAdapter] LoRA params: 3,072 / 204,481 (1.50%)
-    step   1 | forget_auc=0.8022 forget_acc=0.928 retain_auc=0.8512
-    step   5 | forget_auc=0.8015 forget_acc=0.927 retain_auc=0.8512
-    step  10 | forget_auc=0.8009 forget_acc=0.927 retain_auc=0.8512
-    step  15 | forget_auc=0.8004 forget_acc=0.927 retain_auc=0.8512
-    step  20 | forget_auc=0.8003 forget_acc=0.921 retain_auc=0.8511
-    step  25 | forget_auc=0.7988 forget_acc=0.919 retain_auc=0.8505
-    step  30 | forget_auc=0.7974 forget_acc=0.905 retain_auc=0.8486
-    step  35 | forget_auc=0.7872 forget_acc=0.580 retain_auc=0.8433
-    step  40 | forget_auc=0.7787 forget_acc=0.365 retain_auc=0.8223
-    step  45 | forget_auc=0.4400 forget_acc=0.076 retain_auc=0.7116
+    step   1 | forget_auc=0.8021 forget_acc=0.928 retain_auc=0.8512
+    step   5 | forget_auc=0.8017 forget_acc=0.927 retain_auc=0.8512
+    step  10 | forget_auc=0.8013 forget_acc=0.927 retain_auc=0.8512
+    step  15 | forget_auc=0.8010 forget_acc=0.926 retain_auc=0.8511
+    step  20 | forget_auc=0.7982 forget_acc=0.921 retain_auc=0.8507
+    step  25 | forget_auc=0.7961 forget_acc=0.913 retain_auc=0.8490
+    step  30 | forget_auc=0.7789 forget_acc=0.862 retain_auc=0.8433
+    step  35 | forget_auc=0.7697 forget_acc=0.413 retain_auc=0.8207
+    step  40 | forget_auc=0.4817 forget_acc=0.076 retain_auc=0.7298
+    step  45 | forget_auc=0.3038 forget_acc=0.076 retain_auc=0.5511
     [ForgetAdapter] Retain AUC below 0.72 — stopping early
-  [ForgetAdapter] Done in 45.7s
+  [ForgetAdapter] Done in 37.5s
   [RetainAdapter] LoRA params: 15,620 / 244,677 (6.38%)
-  [RetainAdapter] Phase2 end forget_auc=0.7787 → ceiling=0.8587  (max_forget_recovery=0.08)
-    epoch   5 | kl_loss=0.0091 val_auc=0.8362 forget_auc=0.6261 forgetting_score=0.4816
-    epoch  10 | kl_loss=0.0072 val_auc=0.8320 forget_auc=0.6525 forgetting_score=0.4815
-    epoch  15 | kl_loss=0.0065 val_auc=0.8411 forget_auc=0.7992 forgetting_score=0.4938
-    epoch  20 | kl_loss=0.0040 val_auc=0.8372 forget_auc=0.7993 forgetting_score=0.4822
-    epoch  25 | kl_loss=0.0031 val_auc=0.8358 forget_auc=0.7281 forgetting_score=0.4821
-    epoch  30 | kl_loss=0.0019 val_auc=0.8371 forget_auc=0.4360 forgetting_score=0.5077
-    epoch  35 | kl_loss=0.0011 val_auc=0.8370 forget_auc=0.4850 forgetting_score=0.4882
-    epoch  40 | kl_loss=0.0010 val_auc=0.8370 forget_auc=0.4622 forgetting_score=0.4836
-  [RetainAdapter] Done in 1296.3s | best val AUC=0.8411
-    forget_acc=0.9130 retain_auc=0.8499 test_auc=0.8352 kl=0.0008 js=0.0002 time=1342.1s
+  [RetainAdapter] Phase2 end forget_auc=0.4817 → ceiling=0.5617  (max_forget_recovery=0.08)
+    [RetainAdapter] forget_auc=0.5950 exceeded ceiling 0.5617 — stopping early
+  [RetainAdapter] Done in 29.7s | best val AUC=-1.0000
+    forget_acc=0.0759 retain_auc=0.7298 test_auc=0.7249 kl=0.6196 js=0.1728 time=67.7s
 
   LoRA rank=4 forget_frac=20%
 [Data] gmsc | train=78597 val=16842 test=16843
 [Data] forget=1080 (demographic) | retain=77517
   [ForgetAdapter] LoRA params: 3,072 / 204,481 (1.50%)
-    step   1 | forget_auc=0.8024 forget_acc=0.928 retain_auc=0.8512
-    step   5 | forget_auc=0.8019 forget_acc=0.927 retain_auc=0.8512
-    step  10 | forget_auc=0.8013 forget_acc=0.927 retain_auc=0.8512
-    step  15 | forget_auc=0.8010 forget_acc=0.921 retain_auc=0.8511
-    step  20 | forget_auc=0.7981 forget_acc=0.920 retain_auc=0.8506
-    step  25 | forget_auc=0.7968 forget_acc=0.913 retain_auc=0.8494
-    step  30 | forget_auc=0.7961 forget_acc=0.869 retain_auc=0.8467
-    step  35 | forget_auc=0.7815 forget_acc=0.403 retain_auc=0.8394
-    step  40 | forget_auc=0.7847 forget_acc=0.273 retain_auc=0.8195
-    step  45 | forget_auc=0.6804 forget_acc=0.076 retain_auc=0.7716
-    step  50 | forget_auc=0.3920 forget_acc=0.076 retain_auc=0.6712
+    step   1 | forget_auc=0.8025 forget_acc=0.928 retain_auc=0.8512
+    step   5 | forget_auc=0.8020 forget_acc=0.927 retain_auc=0.8512
+    step  10 | forget_auc=0.8009 forget_acc=0.927 retain_auc=0.8512
+    step  15 | forget_auc=0.7999 forget_acc=0.922 retain_auc=0.8513
+    step  20 | forget_auc=0.7974 forget_acc=0.920 retain_auc=0.8512
+    step  25 | forget_auc=0.7961 forget_acc=0.918 retain_auc=0.8510
+    step  30 | forget_auc=0.7871 forget_acc=0.906 retain_auc=0.8494
+    step  35 | forget_auc=0.7195 forget_acc=0.478 retain_auc=0.8402
+    step  40 | forget_auc=0.5430 forget_acc=0.076 retain_auc=0.8033
+    step  45 | forget_auc=0.3169 forget_acc=0.076 retain_auc=0.7040
     [ForgetAdapter] Retain AUC below 0.72 — stopping early
-  [ForgetAdapter] Done in 40.1s
+  [ForgetAdapter] Done in 40.8s
   [RetainAdapter] LoRA params: 15,620 / 244,677 (6.38%)
-  [RetainAdapter] Phase2 end forget_auc=0.6804 → ceiling=0.7604  (max_forget_recovery=0.08)
-    epoch   5 | kl_loss=0.0101 val_auc=0.8359 forget_auc=0.6959 forgetting_score=0.4892
-    [RetainAdapter] forget_auc=0.7605 exceeded ceiling 0.7604 — stopping early
-  [RetainAdapter] Done in 171.0s | best val AUC=0.8359
-    forget_acc=0.0852 retain_auc=0.8491 test_auc=0.8278 kl=0.0079 js=0.0022 time=211.2s
+  [RetainAdapter] Phase2 end forget_auc=0.5430 → ceiling=0.6230  (max_forget_recovery=0.08)
+    [RetainAdapter] forget_auc=0.6514 exceeded ceiling 0.6230 — stopping early
+  [RetainAdapter] Done in 29.6s | best val AUC=-1.0000
+    forget_acc=0.0759 retain_auc=0.8033 test_auc=0.7915 kl=0.3229 js=0.0908 time=70.6s
 
   LoRA rank=8 forget_frac=5%
 [Data] gmsc | train=78597 val=16842 test=16843
 [Data] forget=1080 (demographic) | retain=77517
   [ForgetAdapter] LoRA params: 6,144 / 207,553 (2.96%)
     step   1 | forget_auc=0.8021 forget_acc=0.928 retain_auc=0.8512
-    step   5 | forget_auc=0.8015 forget_acc=0.927 retain_auc=0.8512
-    step  10 | forget_auc=0.8011 forget_acc=0.927 retain_auc=0.8512
-    step  15 | forget_auc=0.8008 forget_acc=0.927 retain_auc=0.8512
-    step  20 | forget_auc=0.8000 forget_acc=0.920 retain_auc=0.8509
-    step  25 | forget_auc=0.7958 forget_acc=0.919 retain_auc=0.8499
-    step  30 | forget_auc=0.7950 forget_acc=0.903 retain_auc=0.8476
-    step  35 | forget_auc=0.7946 forget_acc=0.582 retain_auc=0.8425
-    step  40 | forget_auc=0.7944 forget_acc=0.387 retain_auc=0.8293
-    step  45 | forget_auc=0.6597 forget_acc=0.076 retain_auc=0.7668
-    step  50 | forget_auc=0.2383 forget_acc=0.076 retain_auc=0.5688
+    step   5 | forget_auc=0.8018 forget_acc=0.928 retain_auc=0.8512
+    step  10 | forget_auc=0.8013 forget_acc=0.927 retain_auc=0.8512
+    step  15 | forget_auc=0.8010 forget_acc=0.926 retain_auc=0.8511
+    step  20 | forget_auc=0.8010 forget_acc=0.922 retain_auc=0.8510
+    step  25 | forget_auc=0.7975 forget_acc=0.920 retain_auc=0.8506
+    step  30 | forget_auc=0.7954 forget_acc=0.914 retain_auc=0.8493
+    step  35 | forget_auc=0.7831 forget_acc=0.896 retain_auc=0.8460
+    step  40 | forget_auc=0.7629 forget_acc=0.456 retain_auc=0.8338
+    step  45 | forget_auc=0.6474 forget_acc=0.080 retain_auc=0.7671
+    step  50 | forget_auc=0.3861 forget_acc=0.076 retain_auc=0.5984
     [ForgetAdapter] Retain AUC below 0.72 — stopping early
-  [ForgetAdapter] Done in 42.8s
+  [ForgetAdapter] Done in 40.6s
   [RetainAdapter] LoRA params: 31,240 / 263,369 (11.86%)
-  [RetainAdapter] Phase2 end forget_auc=0.6597 → ceiling=0.7397  (max_forget_recovery=0.08)
-    epoch   5 | kl_loss=0.0095 val_auc=0.8367 forget_auc=0.6475 forgetting_score=0.4819
-    epoch  10 | kl_loss=0.0100 val_auc=0.8346 forget_auc=0.6757 forgetting_score=0.4892
-    [RetainAdapter] forget_auc=0.7472 exceeded ceiling 0.7397 — stopping early
-  [RetainAdapter] Done in 485.2s | best val AUC=0.8369
-    forget_acc=0.0759 retain_auc=0.8499 test_auc=0.8294 kl=0.0075 js=0.0022 time=528.2s
+  [RetainAdapter] Phase2 end forget_auc=0.6474 → ceiling=0.7274  (max_forget_recovery=0.08)
+    [RetainAdapter] forget_auc=0.7396 exceeded ceiling 0.7274 — stopping early
+  [RetainAdapter] Done in 59.0s | best val AUC=0.8326
+    forget_acc=0.1019 retain_auc=0.8427 test_auc=0.8213 kl=0.0133 js=0.0037 time=99.8s
 
   LoRA rank=8 forget_frac=10%
 [Data] gmsc | train=78597 val=16842 test=16843
 [Data] forget=1080 (demographic) | retain=77517
   [ForgetAdapter] LoRA params: 6,144 / 207,553 (2.96%)
-    step   1 | forget_auc=0.8024 forget_acc=0.927 retain_auc=0.8512
-    step   5 | forget_auc=0.8017 forget_acc=0.927 retain_auc=0.8512
-    step  10 | forget_auc=0.8013 forget_acc=0.927 retain_auc=0.8512/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/scipy/spatial/distance.py:1290: RuntimeWarning: invalid value encountered in sqrt
-  return np.sqrt(js / 2.0)
-
-    step  15 | forget_auc=0.8008 forget_acc=0.922 retain_auc=0.8511
-    step  20 | forget_auc=0.7998 forget_acc=0.922 retain_auc=0.8508
-    step  25 | forget_auc=0.7961 forget_acc=0.913 retain_auc=0.8498
-    step  30 | forget_auc=0.7974 forget_acc=0.875 retain_auc=0.8474
-    step  35 | forget_auc=0.7966 forget_acc=0.460 retain_auc=0.8419
-    step  40 | forget_auc=0.7799 forget_acc=0.403 retain_auc=0.8184
-    step  45 | forget_auc=0.3815 forget_acc=0.076 retain_auc=0.6860
+    step   1 | forget_auc=0.8021 forget_acc=0.927 retain_auc=0.8512
+    step   5 | forget_auc=0.8015 forget_acc=0.927 retain_auc=0.8512
+    step  10 | forget_auc=0.8012 forget_acc=0.927 retain_auc=0.8512
+    step  15 | forget_auc=0.8006 forget_acc=0.924 retain_auc=0.8511
+    step  20 | forget_auc=0.8005 forget_acc=0.920 retain_auc=0.8510
+    step  25 | forget_auc=0.7958 forget_acc=0.920 retain_auc=0.8506
+    step  30 | forget_auc=0.7943 forget_acc=0.906 retain_auc=0.8492
+    step  35 | forget_auc=0.7916 forget_acc=0.866 retain_auc=0.8454
+    step  40 | forget_auc=0.7874 forget_acc=0.406 retain_auc=0.8324
+    step  45 | forget_auc=0.6530 forget_acc=0.076 retain_auc=0.7653
+    step  50 | forget_auc=0.2526 forget_acc=0.076 retain_auc=0.5842
     [ForgetAdapter] Retain AUC below 0.72 — stopping early
-  [ForgetAdapter] Done in 72.5s
+  [ForgetAdapter] Done in 37.5s
   [RetainAdapter] LoRA params: 31,240 / 263,369 (11.86%)
-  [RetainAdapter] Phase2 end forget_auc=0.7799 → ceiling=0.8599  (max_forget_recovery=0.08)
-    epoch   5 | kl_loss=0.0081 val_auc=0.8297 forget_auc=0.6323 forgetting_score=0.4863
-    epoch  10 | kl_loss=0.0047 val_auc=0.8362 forget_auc=0.6216 forgetting_score=0.4816
-    epoch  15 | kl_loss=0.0049 val_auc=0.8330 forget_auc=0.3906 forgetting_score=0.4991
-    epoch  20 | kl_loss=0.0028 val_auc=0.8368 forget_auc=0.6135 forgetting_score=0.4913
-    epoch  25 | kl_loss=0.0013 val_auc=0.8368 forget_auc=0.4529 forgetting_score=0.4819
-    epoch  30 | kl_loss=0.0009 val_auc=0.8368 forget_auc=0.5028 forgetting_score=0.4819
-    epoch  35 | kl_loss=0.0009 val_auc=0.8367 forget_auc=0.5641 forgetting_score=0.4819
-    epoch  40 | kl_loss=0.0009 val_auc=0.8369 forget_auc=0.5282 forgetting_score=0.4820
-  [RetainAdapter] Done in 1475.1s | best val AUC=0.8370
-    forget_acc=0.0759 retain_auc=0.8503 test_auc=0.8298 kl=0.0070 js=0.0020 time=1548.1s
+  [RetainAdapter] Phase2 end forget_auc=0.6530 → ceiling=0.7330  (max_forget_recovery=0.08)
+    epoch   5 | kl_loss=0.0085 val_auc=0.8344 forget_auc=0.4472 forgetting_score=0.4805
+    epoch  10 | kl_loss=0.0052 val_auc=0.8352 forget_auc=0.6075 forgetting_score=0.4810
+    [RetainAdapter] forget_auc=0.7388 exceeded ceiling 0.7330 — stopping early
+  [RetainAdapter] Done in 368.6s | best val AUC=0.8358
+    forget_acc=0.0759 retain_auc=0.8495 test_auc=0.8289 kl=0.0077 js=0.0022 time=406.3s
 
   LoRA rank=8 forget_frac=20%
 [Data] gmsc | train=78597 val=16842 test=16843
 [Data] forget=1080 (demographic) | retain=77517
   [ForgetAdapter] LoRA params: 6,144 / 207,553 (2.96%)
-    step   1 | forget_auc=0.8023 forget_acc=0.928 retain_auc=0.8512
+    step   1 | forget_auc=0.8024 forget_acc=0.927 retain_auc=0.8512
     step   5 | forget_auc=0.8017 forget_acc=0.927 retain_auc=0.8512
-    step  10 | forget_auc=0.8011 forget_acc=0.926 retain_auc=0.8512
-    step  15 | forget_auc=0.8007 forget_acc=0.925 retain_auc=0.8512
-    step  20 | forget_auc=0.8001 forget_acc=0.919 retain_auc=0.8511
-    step  25 | forget_auc=0.7968 forget_acc=0.919 retain_auc=0.8504
-    step  30 | forget_auc=0.7947 forget_acc=0.905 retain_auc=0.8485
-    step  35 | forget_auc=0.7854 forget_acc=0.649 retain_auc=0.8434
-    step  40 | forget_auc=0.7306 forget_acc=0.102 retain_auc=0.8178
-    step  45 | forget_auc=0.4994 forget_acc=0.076 retain_auc=0.7081
+    step  10 | forget_auc=0.8011 forget_acc=0.927 retain_auc=0.8512
+    step  15 | forget_auc=0.8006 forget_acc=0.928 retain_auc=0.8512
+    step  20 | forget_auc=0.8004 forget_acc=0.920 retain_auc=0.8511
+    step  25 | forget_auc=0.7961 forget_acc=0.921 retain_auc=0.8508
+    step  30 | forget_auc=0.7947 forget_acc=0.914 retain_auc=0.8499
+    step  35 | forget_auc=0.7847 forget_acc=0.900 retain_auc=0.8475
+    step  40 | forget_auc=0.7722 forget_acc=0.481 retain_auc=0.8402
+    step  45 | forget_auc=0.7633 forget_acc=0.180 retain_auc=0.8217
+    step  50 | forget_auc=0.3647 forget_acc=0.076 retain_auc=0.7128
     [ForgetAdapter] Retain AUC below 0.72 — stopping early
-  [ForgetAdapter] Done in 44.8s
+  [ForgetAdapter] Done in 42.2s
   [RetainAdapter] LoRA params: 31,240 / 263,369 (11.86%)
-  [RetainAdapter] Phase2 end forget_auc=0.7306 → ceiling=0.8106  (max_forget_recovery=0.08)
-    epoch   5 | kl_loss=0.0088 val_auc=0.8364 forget_auc=0.6232 forgetting_score=0.4833
-    epoch  10 | kl_loss=0.0084 val_auc=0.8339 forget_auc=0.6440 forgetting_score=0.4811
-    epoch  15 | kl_loss=0.0046 val_auc=0.8351 forget_auc=0.6306 forgetting_score=0.4810
-    epoch  20 | kl_loss=0.0039 val_auc=0.8331 forget_auc=0.4541 forgetting_score=0.4798
-    epoch  25 | kl_loss=0.0025 val_auc=0.8368 forget_auc=0.3183 forgetting_score=0.4819
-    epoch  30 | kl_loss=0.0008 val_auc=0.8369 forget_auc=0.3220 forgetting_score=0.4820
-    epoch  35 | kl_loss=0.0008 val_auc=0.8367 forget_auc=0.3501 forgetting_score=0.4819
-    epoch  40 | kl_loss=0.0007 val_auc=0.8368 forget_auc=0.3516 forgetting_score=0.4819
-  [RetainAdapter] Done in 1384.2s | best val AUC=0.8371
-    forget_acc=0.0759 retain_auc=0.8503 test_auc=0.8302 kl=0.0072 js=0.0021 time=1429.1s
+  [RetainAdapter] Phase2 end forget_auc=0.7633 → ceiling=0.8433  (max_forget_recovery=0.08)
+    epoch   5 | kl_loss=0.0101 val_auc=0.8351 forget_auc=0.7182 forgetting_score=0.6179
+    epoch  10 | kl_loss=0.0070 val_auc=0.8318 forget_auc=0.7250 forgetting_score=0.4852
+    epoch  15 | kl_loss=0.0042 val_auc=0.8367 forget_auc=0.5921 forgetting_score=0.4834
+    epoch  20 | kl_loss=0.0034 val_auc=0.8351 forget_auc=0.7542 forgetting_score=0.5165
+    epoch  25 | kl_loss=0.0014 val_auc=0.8370 forget_auc=0.3555 forgetting_score=0.4836
+    epoch  30 | kl_loss=0.0010 val_auc=0.8370 forget_auc=0.4351 forgetting_score=0.4821
+    epoch  35 | kl_loss=0.0009 val_auc=0.8369 forget_auc=0.4880 forgetting_score=0.4820
+    epoch  40 | kl_loss=0.0009 val_auc=0.8369 forget_auc=0.3588 forgetting_score=0.4820
+  [RetainAdapter] Done in 1335.9s | best val AUC=0.8406
+    forget_acc=0.9204 retain_auc=0.8491 test_auc=0.8359 kl=0.0021 js=0.0005 time=1378.2s
 
   LoRA rank=16 forget_frac=5%
 [Data] gmsc | train=78597 val=16842 test=16843
 [Data] forget=1080 (demographic) | retain=77517
   [ForgetAdapter] LoRA params: 12,288 / 213,697 (5.75%)
-    step   1 | forget_auc=0.8021 forget_acc=0.927 retain_auc=0.8512
-    step   5 | forget_auc=0.8017 forget_acc=0.927 retain_auc=0.8512
-    step  10 | forget_auc=0.8011 forget_acc=0.927 retain_auc=0.8512
-    step  15 | forget_auc=0.8004 forget_acc=0.923 retain_auc=0.8512
-    step  20 | forget_auc=0.7998 forget_acc=0.922 retain_auc=0.8510
-    step  25 | forget_auc=0.7945 forget_acc=0.914 retain_auc=0.8504
-    step  30 | forget_auc=0.7944 forget_acc=0.902 retain_auc=0.8487
-    step  35 | forget_auc=0.7923 forget_acc=0.607 retain_auc=0.8449
-    step  40 | forget_auc=0.7711 forget_acc=0.412 retain_auc=0.8344
-    step  45 | forget_auc=0.6440 forget_acc=0.306 retain_auc=0.8022
-    step  50 | forget_auc=0.4474 forget_acc=0.078 retain_auc=0.7402
-    step  55 | forget_auc=0.3716 forget_acc=0.076 retain_auc=0.6797
+    step   1 | forget_auc=0.8026 forget_acc=0.927 retain_auc=0.8512
+    step   5 | forget_auc=0.8019 forget_acc=0.927 retain_auc=0.8512
+    step  10 | forget_auc=0.8013 forget_acc=0.926 retain_auc=0.8512
+    step  15 | forget_auc=0.8007 forget_acc=0.924 retain_auc=0.8511
+    step  20 | forget_auc=0.8000 forget_acc=0.919 retain_auc=0.8510
+    step  25 | forget_auc=0.7990 forget_acc=0.919 retain_auc=0.8508
+    step  30 | forget_auc=0.7969 forget_acc=0.907 retain_auc=0.8498
+    step  35 | forget_auc=0.7948 forget_acc=0.869 retain_auc=0.8476
+    step  40 | forget_auc=0.7625 forget_acc=0.431 retain_auc=0.8412
+    step  45 | forget_auc=0.5191 forget_acc=0.098 retain_auc=0.7912
+    step  50 | forget_auc=0.2799 forget_acc=0.076 retain_auc=0.6034
     [ForgetAdapter] Retain AUC below 0.72 — stopping early
-  [ForgetAdapter] Done in 43.8s
+  [ForgetAdapter] Done in 51.5s
   [RetainAdapter] LoRA params: 62,480 / 300,753 (20.77%)
-  [RetainAdapter] Phase2 end forget_auc=0.4474 → ceiling=0.5274  (max_forget_recovery=0.08)
-    [RetainAdapter] forget_auc=0.5885 exceeded ceiling 0.5274 — stopping early
-  [RetainAdapter] Done in 32.7s | best val AUC=-1.0000
-    forget_acc=0.0778 retain_auc=0.7402 test_auc=0.7352 kl=0.6479 js=0.1592 time=76.6s
+  [RetainAdapter] Phase2 end forget_auc=0.5191 → ceiling=0.5991  (max_forget_recovery=0.08)
+    [RetainAdapter] forget_auc=0.7259 exceeded ceiling 0.5991 — stopping early
+  [RetainAdapter] Done in 65.0s | best val AUC=0.8313
+    forget_acc=0.1685 retain_auc=0.8430 test_auc=0.8231 kl=0.0136 js=0.0038 time=116.6s
 
   LoRA rank=16 forget_frac=10%
 [Data] gmsc | train=78597 val=16842 test=16843
 [Data] forget=1080 (demographic) | retain=77517
   [ForgetAdapter] LoRA params: 12,288 / 213,697 (5.75%)
-    step   1 | forget_auc=0.8022 forget_acc=0.927 retain_auc=0.8512
-    step   5 | forget_auc=0.8017 forget_acc=0.927 retain_auc=0.8512
+    step   1 | forget_auc=0.8023 forget_acc=0.927 retain_auc=0.8512
+    step   5 | forget_auc=0.8018 forget_acc=0.927 retain_auc=0.8512
     step  10 | forget_auc=0.8012 forget_acc=0.927 retain_auc=0.8512
-    step  15 | forget_auc=0.8004 forget_acc=0.924 retain_auc=0.8512
-    step  20 | forget_auc=0.7998 forget_acc=0.920 retain_auc=0.8511
-    step  25 | forget_auc=0.7958 forget_acc=0.921 retain_auc=0.8508
-    step  30 | forget_auc=0.7947 forget_acc=0.912 retain_auc=0.8497
-    step  35 | forget_auc=0.7870 forget_acc=0.869 retain_auc=0.8468
-    step  40 | forget_auc=0.7604 forget_acc=0.244 retain_auc=0.8343
-    step  45 | forget_auc=0.4616 forget_acc=0.076 retain_auc=0.7516
-    step  50 | forget_auc=0.2634 forget_acc=0.076 retain_auc=0.5882
+    step  15 | forget_auc=0.8004 forget_acc=0.922 retain_auc=0.8511
+    step  20 | forget_auc=0.8003 forget_acc=0.921 retain_auc=0.8510
+    step  25 | forget_auc=0.7981 forget_acc=0.918 retain_auc=0.8503
+    step  30 | forget_auc=0.7963 forget_acc=0.901 retain_auc=0.8485
+    step  35 | forget_auc=0.7923 forget_acc=0.593 retain_auc=0.8428
+    step  40 | forget_auc=0.6313 forget_acc=0.080 retain_auc=0.8123
+    step  45 | forget_auc=0.3258 forget_acc=0.076 retain_auc=0.6694
     [ForgetAdapter] Retain AUC below 0.72 — stopping early
-  [ForgetAdapter] Done in 39.1s
+  [ForgetAdapter] Done in 47.8s
   [RetainAdapter] LoRA params: 62,480 / 300,753 (20.77%)
-  [RetainAdapter] Phase2 end forget_auc=0.4616 → ceiling=0.5416  (max_forget_recovery=0.08)
-    [RetainAdapter] forget_auc=0.6738 exceeded ceiling 0.5416 — stopping early
-  [RetainAdapter] Done in 58.1s | best val AUC=0.8315
-    forget_acc=0.4787 retain_auc=0.8426 test_auc=0.8230 kl=0.0133 js=0.0038 time=97.2s
+  [RetainAdapter] Phase2 end forget_auc=0.6313 → ceiling=0.7113  (max_forget_recovery=0.08)
+    epoch   5 | kl_loss=0.0094 val_auc=0.8335 forget_auc=0.6186 forgetting_score=0.4800
+    [RetainAdapter] forget_auc=0.7391 exceeded ceiling 0.7113 — stopping early
+  [RetainAdapter] Done in 286.7s | best val AUC=0.8354
+    forget_acc=0.0759 retain_auc=0.8480 test_auc=0.8276 kl=0.0093 js=0.0027 time=334.6s
 
   LoRA rank=16 forget_frac=20%
 [Data] gmsc | train=78597 val=16842 test=16843
 [Data] forget=1080 (demographic) | retain=77517
   [ForgetAdapter] LoRA params: 12,288 / 213,697 (5.75%)
-    step   1 | forget_auc=0.8024 forget_acc=0.928 retain_auc=0.8512
-    step   5 | forget_auc=0.8024 forget_acc=0.927 retain_auc=0.8512
+    step   1 | forget_auc=0.8021 forget_acc=0.927 retain_auc=0.8512
+    step   5 | forget_auc=0.8020 forget_acc=0.927 retain_auc=0.8512
     step  10 | forget_auc=0.8015 forget_acc=0.927 retain_auc=0.8512
-    step  15 | forget_auc=0.8013 forget_acc=0.922 retain_auc=0.8511
-    step  20 | forget_auc=0.8011 forget_acc=0.919 retain_auc=0.8509
-    step  25 | forget_auc=0.7976 forget_acc=0.914 retain_auc=0.8504
-    step  30 | forget_auc=0.7956 forget_acc=0.901 retain_auc=0.8489
-    step  35 | forget_auc=0.7940 forget_acc=0.657 retain_auc=0.8458
-    step  40 | forget_auc=0.7877 forget_acc=0.426 retain_auc=0.8313
-    step  45 | forget_auc=0.5292 forget_acc=0.076 retain_auc=0.7368
-    step  50 | forget_auc=0.2480 forget_acc=0.076 retain_auc=0.5279
+    step  15 | forget_auc=0.8010 forget_acc=0.926 retain_auc=0.8512
+    step  20 | forget_auc=0.8007 forget_acc=0.921 retain_auc=0.8510
+    step  25 | forget_auc=0.7963 forget_acc=0.920 retain_auc=0.8504
+    step  30 | forget_auc=0.7957 forget_acc=0.905 retain_auc=0.8487
+    step  35 | forget_auc=0.7974 forget_acc=0.631 retain_auc=0.8448
+    step  40 | forget_auc=0.7864 forget_acc=0.418 retain_auc=0.8303
+    step  45 | forget_auc=0.6884 forget_acc=0.079 retain_auc=0.7624
+    step  50 | forget_auc=0.2498 forget_acc=0.076 retain_auc=0.5308
     [ForgetAdapter] Retain AUC below 0.72 — stopping early
-  [ForgetAdapter] Done in 37.3s
+  [ForgetAdapter] Done in 44.6s
   [RetainAdapter] LoRA params: 62,480 / 300,753 (20.77%)
-  [RetainAdapter] Phase2 end forget_auc=0.5292 → ceiling=0.6092  (max_forget_recovery=0.08)
-    [RetainAdapter] forget_auc=0.6444 exceeded ceiling 0.6092 — stopping early
-  [RetainAdapter] Done in 59.9s | best val AUC=0.8047
-    forget_acc=0.7361 retain_auc=0.8130 test_auc=0.7964 kl=0.0410 js=0.0119 time=97.3s
+  [RetainAdapter] Phase2 end forget_auc=0.6884 → ceiling=0.7684  (max_forget_recovery=0.08)
+    epoch   5 | kl_loss=0.0098 val_auc=0.8288 forget_auc=0.6698 forgetting_score=0.4773
+    epoch  10 | kl_loss=0.0059 val_auc=0.8363 forget_auc=0.6659 forgetting_score=0.4817
+    epoch  15 | kl_loss=0.0056 val_auc=0.8354 forget_auc=0.6644 forgetting_score=0.4811
+    epoch  20 | kl_loss=0.0038 val_auc=0.8372 forget_auc=0.6569 forgetting_score=0.4830
+    epoch  25 | kl_loss=0.0031 val_auc=0.8372 forget_auc=0.7066 forgetting_score=0.4853
+    epoch  30 | kl_loss=0.0012 val_auc=0.8373 forget_auc=0.5550 forgetting_score=0.4884
+    epoch  35 | kl_loss=0.0010 val_auc=0.8374 forget_auc=0.3836 forgetting_score=0.4900
+    epoch  40 | kl_loss=0.0009 val_auc=0.8373 forget_auc=0.3883 forgetting_score=0.4838
+  [RetainAdapter] Done in 1252.7s | best val AUC=0.8374
+    forget_acc=0.1269 retain_auc=0.8503 test_auc=0.8304 kl=0.0073 js=0.0021 time=1297.3s
 
 Step 5: Ablation study
   5a. Phase 2 only (no retain adapter)
-    forget_acc=0.0759 retain_auc=0.7484 test_auc=0.7464 kl=0.5908 js=0.1595 time=0.0s
+    forget_acc=0.1741 retain_auc=0.8242 test_auc=0.8144 kl=0.2940 js=0.0816 time=0.0s
   5b. Phase 3 only (no forget adapter)
     forget_acc=0.9269 retain_auc=0.8507 test_auc=0.8357 kl=0.0001 js=0.0000 time=0.0s
   5c. Full LoRA method
-    forget_acc=0.1444 retain_auc=0.8491 test_auc=0.8287 kl=0.0081 js=0.0023 time=0.0s
+    forget_acc=0.0907 retain_auc=0.8488 test_auc=0.8284 kl=0.0082 js=0.0023 time=0.0s
 
 Step 6: MIA attack experiment/storage/dd25007/conda_envs/lora_mu/lib/python3.11/site-packages/sklearn/metrics/_ranking.py:442: UndefinedMetricWarning: Only one class is present in y_true. ROC AUC score is not defined in that case.
   warnings.warn(
@@ -313,25 +283,25 @@ Step 6: MIA attack experiment/storage/dd25007/conda_envs/lora_mu/lib/python3.11/
   Running LoRA unlearn for MIA evaluation...
 
 ── MIA Suite ──────────────────────────────────────
-  [MIA-Loss] forget_loss_mean=0.7102 retain_loss_mean=0.1749 attack_acc=0.0000 attack_auc=0.0541 (goal≈0.5)
-  [LiRA] forget_score_mean=0.4934 retain_score_mean=0.0054
-  [LiRA] attack_auc=0.0794 attack_acc=0.6087 (goal≈0.5 for both)
-  [RelearningMIA] forget_auc: 0.4850 → 0.7932 over 20 steps (gain=+0.3082)
+  [MIA-Loss] forget_loss_mean=0.6975 retain_loss_mean=0.1704 attack_acc=0.0000 attack_auc=0.0571 (goal≈0.5)
+  [LiRA] forget_score_mean=0.4774 retain_score_mean=0.0023
+  [LiRA] attack_auc=0.0791 attack_acc=0.2243 (goal≈0.5 for both)
+  [RelearningMIA] forget_auc: 0.7337 → 0.8014 over 20 steps (gain=+0.0677)
   [RelearningMIA] Small gain (<0.1) → certified. Large gain (>0.2) → superficial forgetting.
   [MIA] Training 4 shadow models (calibrated (D_retain only))...
     Shadow model 1/4 done (mia_score=1.0000)
     Shadow model 2/4 done (mia_score=1.0000)
     Shadow model 3/4 done (mia_score=0.0000)
     Shadow model 4/4 done (mia_score=1.0000)
-  [MIA] forget_set MIA accuracy=1.0000 (goal≈0.5) | retain_set MIA=0.3004 | MIA AUC=nan
+  [MIA] forget_set MIA accuracy=1.0000 (goal≈0.5) | retain_set MIA=0.2989 | MIA AUC=nan
   [MIA-CI] Per-shadow scores: ['1.000', '1.000', '0.000', '1.000']
-  [MIA-CI] Mean=0.7500 ± Std=0.4330  ← High std with n_forget=70 means shadow MIA is unreliable.
+  [MIA-CI] Mean=0.7500 ± Std=0.4330  <- High std with n_forget=70 means shadow MIA is unreliable.
            Recommend reporting LiRA AUC instead as primary metric.
 
 ── MIA Summary ────────────────────────────────────
-  Loss MIA AUC    = 0.0541  (primary, goal≈0.5)
-  LiRA AUC        = 0.0794  (primary if ref model available, goal≈0.5)
-  Relearn gain    = +0.3082  (✗ superficial)
+  Loss MIA AUC    = 0.0571  (primary, goal≈0.5)
+  LiRA AUC        = 0.0791  (primary if ref model available, goal≈0.5)
+  Relearn gain    = +0.0677  (✓ certified)
   Shadow MIA      = 1.0000 ± 0.4330  (CI shows reliability)
 ───────────────────────────────────────────────────
   MIA on base model (upper bound)...
@@ -345,28 +315,28 @@ RESULTS SUMMARY — gmsc / ft_transformer
 Method                     ForgetAUC  ForgetAcc  RetainAUC    TestAUC       KL   Time(s)
 --------------------------------------------------------------------------------
 Base Model                    0.8024     0.9278        N/A     0.8358      N/A       N/A
-full_retrain                  0.7942     0.9241     0.8520     0.8348   0.0020     456.3
-gradient_ascent               0.3601     0.0759     0.6773     0.6756   2.4678      69.5
-finetune_retain               0.8020     0.9213     0.8515     0.8360   0.0008      45.6
-sisa                          0.7881     0.9204     0.8476     0.8336   0.0031     105.5
+full_retrain                  0.7999     0.9231     0.8545     0.8351   0.0017     627.5
+gradient_ascent               0.3708     0.0759     0.6781     0.6765   2.4646      69.7
+finetune_retain               0.8013     0.9222     0.8515     0.8360   0.0006      43.9
+sisa                          0.7919     0.9194     0.8471     0.8330   0.0036     104.6
 influence_fn                  0.8029     0.9269     0.8512     0.8358   0.0001       0.4
-LoRA-r4_f5pct                 0.6012     0.0759     0.7710     0.7601   0.4914      73.0
-LoRA-r4_f10pct                0.7992     0.9130     0.8499     0.8352   0.0008    1342.1
-LoRA-r4_f20pct                0.6959     0.0852     0.8491     0.8278   0.0079     211.2
-LoRA-r8_f5pct                 0.6928     0.0759     0.8499     0.8294   0.0075     528.2
-LoRA-r8_f10pct                0.5829     0.0759     0.8503     0.8298   0.0070    1548.1
-LoRA-r8_f20pct                0.4642     0.0759     0.8503     0.8302   0.0072    1429.1
-LoRA-r16_f5pct                0.4474     0.0778     0.7402     0.7352   0.6479      76.6
-LoRA-r16_f10pct               0.4712     0.4787     0.8426     0.8230   0.0133      97.2
-LoRA-r16_f20pct               0.4705     0.7361     0.8130     0.7964   0.0410      97.3
+LoRA-r4_f5pct                 0.5506     0.0759     0.8501     0.8301   0.0072    1275.7
+LoRA-r4_f10pct                0.4817     0.0759     0.7298     0.7249   0.6196      67.7
+LoRA-r4_f20pct                0.5430     0.0759     0.8033     0.7915   0.3229      70.6
+LoRA-r8_f5pct                 0.4210     0.1019     0.8427     0.8213   0.0133      99.8
+LoRA-r8_f10pct                0.6445     0.0759     0.8495     0.8289   0.0077     406.3
+LoRA-r8_f20pct                0.8005     0.9204     0.8491     0.8359   0.0021    1378.2
+LoRA-r16_f5pct                0.5721     0.1685     0.8430     0.8231   0.0136     116.6
+LoRA-r16_f10pct               0.5820     0.0759     0.8480     0.8276   0.0093     334.6
+LoRA-r16_f20pct               0.7307     0.1269     0.8503     0.8304   0.0073    1297.3
 ================================================================================
 
 MIA Results (goal: ≈0.5)
   lora_loss_mia: MIA score = 0.0000
   lora_shadow_mia: MIA score = 1.0000
   base_loss_mia: MIA score = 0.8343
-  lora_lira: AUC = 0.0794  acc = 0.6087  (primary metric)
-  lora_relearning: gain = +0.3082  ✗ superficial
+  lora_lira: AUC = 0.0791  acc = 0.2243  (primary metric)
+  lora_relearning: gain = +0.0677  ✓ certified
   lora_shadow_mia: 1.0000 ± 0.4330  (high std = unreliable on small D_f)
 
 Done.

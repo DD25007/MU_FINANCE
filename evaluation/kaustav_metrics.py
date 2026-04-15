@@ -372,4 +372,8 @@ def full_evaluation(
             f"js={results['js_divergence']:.4f} time={elapsed_seconds:.1f}s"
         )
 
+    results["forgetting_score"] = (1.0 - abs(results["forget_acc"] - 0.5)) * results[
+        "retain_auc"
+    ]
+    
     return results

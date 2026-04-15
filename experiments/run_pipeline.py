@@ -152,6 +152,7 @@ def run_pipeline(cfg: dict = None) -> dict:
     forget_indices = data["forget_indices"]
     cat_dims = data["cat_dims"]
     num_num_features = data["num_num_features"]
+    sensitive_attr = data.get("forget_sensitive_attr", None)
 
     model_factory = get_model_factory(cfg, num_num_features, cat_dims, device)
 
@@ -271,10 +272,15 @@ def run_pipeline(cfg: dict = None) -> dict:
             device,
             base_forget_acc,
             elapsed_seconds=h_retrain["elapsed"],
+            sensitive_attr=sensitive_attr,
             verbose=True,
         )
         r["elapsed"] = h_retrain["elapsed"]
         baseline_results["full_retrain"] = r
+        retrain_ckpt = os.path.join(
+            cfg["ckpt_dir"], f"retrain_{cfg['dataset']}_{cfg['arch']}.pt"
+        )
+        save_model(m_retrain, retrain_ckpt)
 
         # 3b. Naïve Gradient Ascent
         print("\n  3b. Naïve Gradient Ascent")
@@ -296,6 +302,7 @@ def run_pipeline(cfg: dict = None) -> dict:
             device,
             base_forget_acc,
             elapsed_seconds=h_ga["elapsed"],
+            sensitive_attr=sensitive_attr,
             verbose=True,
         )
         r["elapsed"] = h_ga["elapsed"]
@@ -315,6 +322,7 @@ def run_pipeline(cfg: dict = None) -> dict:
             device,
             base_forget_acc,
             elapsed_seconds=h_ft["elapsed"],
+            sensitive_attr=sensitive_attr,
             verbose=True,
         )
         r["elapsed"] = h_ft["elapsed"]
@@ -341,6 +349,7 @@ def run_pipeline(cfg: dict = None) -> dict:
             device,
             base_forget_acc,
             elapsed_seconds=h_sisa["elapsed"],
+            sensitive_attr=sensitive_attr,
             verbose=True,
         )
         r["elapsed"] = h_sisa["elapsed"]
@@ -360,6 +369,7 @@ def run_pipeline(cfg: dict = None) -> dict:
             device,
             base_forget_acc,
             elapsed_seconds=h_if["elapsed"],
+            sensitive_attr=sensitive_attr,
             verbose=True,
         )
         r["elapsed"] = h_if["elapsed"]
@@ -386,6 +396,7 @@ def run_pipeline(cfg: dict = None) -> dict:
                 device,
                 base_forget_acc,
                 elapsed_seconds=h_rl["elapsed"],
+                sensitive_attr=sensitive_attr,
                 verbose=True,
             )
             r["elapsed"] = h_rl["elapsed"]
@@ -460,6 +471,7 @@ def run_pipeline(cfg: dict = None) -> dict:
                 device,
                 base_forget_acc,
                 elapsed_seconds=total_time,
+                sensitive_attr=sensitive_attr,
                 verbose=True,
             )
             r["elapsed"] = total_time
@@ -502,6 +514,7 @@ def run_pipeline(cfg: dict = None) -> dict:
             test_ds,
             device,
             base_forget_acc,
+            sensitive_attr=sensitive_attr,
             verbose=True,
         )
         ablation_results["phase2_only"] = r
@@ -526,6 +539,7 @@ def run_pipeline(cfg: dict = None) -> dict:
             test_ds,
             device,
             base_forget_acc,
+            sensitive_attr=sensitive_attr,
             verbose=True,
         )
         ablation_results["phase3_only"] = r
@@ -565,6 +579,7 @@ def run_pipeline(cfg: dict = None) -> dict:
             test_ds,
             device,
             base_forget_acc,
+            sensitive_attr=sensitive_attr,
             verbose=True,
         )
         ablation_results["full_lora"] = r
@@ -610,11 +625,10 @@ def run_pipeline(cfg: dict = None) -> dict:
         )
 
         # Get retrain model as LiRA reference (if available)
-        retrain_ref = None
-        if "full_retrain" in baseline_results:
-            # Re-run retrain to get the model object (not stored above — fix: store it)
-            # If you store m_retrain in Step 3a, pass it here directly.
-            retrain_ref = baseline_results.get("_full_retrain_model", None)
+        retrain_ref = baseline_results.get("_full_retrain_model", None)
+        if retrain_ref is None and os.path.exists(retrain_ckpt):
+            retrain_ref = model_factory()
+            retrain_ref = load_model(retrain_ref, retrain_ckpt, device)
 
         # Full MIA suite (replaces individual run_mia + loss_based_mia calls)
         suite = run_full_mia_suite(
@@ -661,7 +675,8 @@ def run_pipeline(cfg: dict = None) -> dict:
     # Save results
     # ────────────────────────────────────────
     results_path = os.path.join(
-        cfg["results_dir"], f"results_{cfg['dataset']}_{cfg['arch']}.json"
+        cfg["results_dir"],
+        f"results_{cfg['dataset']}_{cfg['arch']}_{cfg['forget_strategy']}.json",
     )
     with open(results_path, "w") as f:
         json.dump(_jsonify(all_results), f, indent=2)
@@ -692,71 +707,90 @@ def _jsonify(obj):
 
 
 def _print_summary(results: dict, cfg: dict):
-    print(f"\n{'='*80}")
-    print(f"RESULTS SUMMARY — {cfg['dataset']} / {cfg['arch']}")
-    print(f"{'='*80}")
+    print(f"\n{'='*100}")
+    print(
+        f"RESULTS SUMMARY — {cfg['dataset']} / {cfg['arch']} / {cfg['forget_strategy']}"
+    )
+    print(f"{'='*100}")
     print(
         f"{'Method':<25} {'ForgetAUC':>10} {'ForgetAcc':>10} {'RetainAUC':>10} "
-        f"{'TestAUC':>10} {'KL':>8} {'Time(s)':>9}"
+        f"{'TestAUC':>10} {'ForgScore':>10} {'ΔEO':>8} {'KL':>8} {'Relearn':>8} {'Time(s)':>9}"
     )
-    print("-" * 80)
+    print("-" * 100)
 
-    # Base model
-    if "base_forget_acc" in results:
+    def _row(label, r):
         print(
-            f"{'Base Model':<25} {results.get('base_forget_auc', float('nan')):>10.4f} "
-            f"{results['base_forget_acc']:>10.4f} "
-            f"{'N/A':>10} {results.get('base_test_auc', 0):>10.4f} {'N/A':>8} {'N/A':>9}"
+            f"{label:<25} "
+            f"{r.get('forget_auc', float('nan')):>10.4f} "
+            f"{r.get('forget_acc', float('nan')):>10.4f} "
+            f"{r.get('retain_auc', float('nan')):>10.4f} "
+            f"{r.get('test_auc', float('nan')):>10.4f} "
+            f"{r.get('forgetting_score', float('nan')):>10.4f} "
+            f"{r.get('delta_eo') if r.get('delta_eo') is not None else float('nan'):>8.4f} "
+            f"{r.get('kl_div', float('nan')):>8.4f} "
+            f"{r.get('relearn_steps', float('nan')):>8} "
+            f"{r.get('elapsed', float('nan')):>9.1f}"
         )
+
+    # Base model row (partial — no retain/forget split at train time)
+    print(
+        f"{'Base Model':<25} "
+        f"{results.get('base_forget_auc', float('nan')):>10.4f} "
+        f"{results.get('base_forget_acc', float('nan')):>10.4f} "
+        f"{'N/A':>10} "
+        f"{results.get('base_test_auc', float('nan')):>10.4f} "
+        f"{'N/A':>10} {'N/A':>8} {'N/A':>8} {'N/A':>8} {'N/A':>9}"
+    )
 
     for method, r in results.get("baselines", {}).items():
-        # Skip internal keys (e.g. _full_retrain_model) and non-dict entries
         if method.startswith("_") or not isinstance(r, dict):
             continue
-        print(
-            f"{method:<25} {r.get('forget_auc', float('nan')):>10.4f} "
-            f"{r.get('forget_acc', 0):>10.4f} "
-            f"{r.get('retain_auc', 0):>10.4f} {r.get('test_auc', 0):>10.4f} "
-            f"{r.get('kl_div', 0):>8.4f} {r.get('elapsed', 0):>9.1f}"
-        )
+        _row(method, r)
 
     for key, r in results.get("lora", {}).items():
-        label = f"LoRA-{key}"
-        print(
-            f"{label:<25} {r.get('forget_auc', float('nan')):>10.4f} "
-            f"{r.get('forget_acc', 0):>10.4f} "
-            f"{r.get('retain_auc', 0):>10.4f} {r.get('test_auc', 0):>10.4f} "
-            f"{r.get('kl_div', 0):>8.4f} {r.get('elapsed', 0):>9.1f}"
-        )
+        _row(f"LoRA-{key}", r)
 
-    print("=" * 80)
+    print("=" * 100)
 
-    # MIA summary
+    # Ablation block
+    ablation = results.get("ablation", {})
+    if ablation:
+        print("\nABLATION")
+        print("-" * 100)
+        for key, r in ablation.items():
+            if isinstance(r, dict):
+                _row(key, r)
+        print("=" * 100)
+
+    # MIA block
     mia = results.get("mia", {})
     if mia:
-        print("\nMIA Results (goal: ≈0.5)")
-        for key, r in mia.items():
-            if not isinstance(r, dict):
-                continue
-            score = r.get("mia_score")
-            if score is not None:
-                print(f"  {key}: MIA score = {score:.4f}")
+        print("\nMIA Results (goal: ≈0.5 for loss/shadow/LiRA, <0.1 for relearn gain)")
+        base_mia = mia.get("base_loss_mia", {})
+        if isinstance(base_mia, dict):
+            print(f"  base_loss_mia (upper bound): {base_mia.get('mia_score', 'N/A')}")
 
-        if mia.get("lora_lira"):
-            lira = mia["lora_lira"]
-            print(
-                f"  lora_lira: AUC = {lira['lira_auc']:.4f}  "
-                f"acc = {lira['lira_acc']:.4f}  (primary metric)"
-            )
-
-        if mia.get("lora_relearning"):
-            gain = mia["lora_relearning"]["relearn_gain"]
-            verdict = "✓ certified" if abs(gain) < 0.1 else "✗ superficial"
-            print(f"  lora_relearning: gain = {gain:+.4f}  {verdict}")
+        lora_loss = mia.get("lora_loss_mia", {})
+        if isinstance(lora_loss, dict):
+            print(f"  lora_loss_mia:    score={lora_loss.get('mia_score', 'N/A')}")
 
         shadow = mia.get("lora_shadow_mia", {})
         if isinstance(shadow, dict) and shadow.get("ci_std") is not None:
             print(
-                f"  lora_shadow_mia: {shadow['mia_score']:.4f} ± {shadow['ci_std']:.4f}  "
-                f"(high std = unreliable on small D_f)"
+                f"  lora_shadow_mia:  score={shadow['mia_score']:.4f} ± {shadow['ci_std']:.4f}"
+                f"  {'(unreliable — high σ)' if shadow['ci_std'] > 0.05 else ''}"
             )
+
+        lira = mia.get("lora_lira", {})
+        if isinstance(lira, dict):
+            print(
+                f"  lora_lira:        AUC={lira.get('lira_auc', 'N/A'):.4f}  "
+                f"acc={lira.get('lira_acc', 'N/A'):.4f}  <- primary metric"
+            )
+
+        relearn = mia.get("lora_relearning", {})
+        if isinstance(relearn, dict):
+            gain = relearn.get("relearn_gain", None)
+            if gain is not None:
+                verdict = "✓ CERTIFIED" if abs(gain) < 0.1 else "✗ superficial"
+                print(f"  lora_relearning:  gain={gain:+.4f}  {verdict}")
