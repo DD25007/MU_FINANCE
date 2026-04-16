@@ -110,7 +110,7 @@ def run_relearning_attack(
     Tracks forget_acc per epoch to produce a relearning curve.
 
     A truly unlearned model should recover forget_acc slowly (like training from
-    scratch). A model that only superficially forgot will recover within 1–2 epochs.
+    scratch). A model that only superficially forgot will recover within 1-2 epochs.
 
     Returns: {"epoch": [...], "forget_acc": [...], "forget_auc": [...]}
     """

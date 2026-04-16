@@ -42,7 +42,7 @@ def _inject_noise_into_lora(model: nn.Module, noise_scale: float, device: torch.
     (DP-flavored). This degrades the attacker's ability to distinguish forget
     samples from non-members via confidence features.
 
-    noise_scale: std of the Gaussian noise (e.g. 0.01–0.05).
+    noise_scale: std of the Gaussian noise (e.g. 0.01-0.05).
                  Higher = more privacy, lower = more utility.
                  Recommended: 0.01 (safe), 0.03 (aggressive).
     """

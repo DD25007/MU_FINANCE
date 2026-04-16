@@ -7,3 +7,4 @@ models/checkpoints/
 
 .*
 data/
+*.sh

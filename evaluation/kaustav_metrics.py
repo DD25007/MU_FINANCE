@@ -375,5 +375,5 @@ def full_evaluation(
     results["forgetting_score"] = (1.0 - abs(results["forget_acc"] - 0.5)) * results[
         "retain_auc"
     ]
-    
+
     return results

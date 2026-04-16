@@ -425,6 +425,8 @@ def run_pipeline(cfg: dict = None) -> dict:
             )
             f_ds = data_frac["forget"]
             r_ds = data_frac["retain"]
+            # Extract sensitive attributes for THIS forget set (may differ from initial split)
+            sensitive_attr_frac = data_frac.get("forget_sensitive_attr", None)
 
             # Phase 2: Forget adapter
             t_fa_start = time.time()
@@ -471,7 +473,7 @@ def run_pipeline(cfg: dict = None) -> dict:
                 device,
                 base_forget_acc,
                 elapsed_seconds=total_time,
-                sensitive_attr=sensitive_attr,
+                sensitive_attr=sensitive_attr_frac,
                 verbose=True,
             )
             r["elapsed"] = total_time

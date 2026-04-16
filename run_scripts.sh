@@ -4,7 +4,7 @@ DATASETS=("german" "gmsc")
 ARCHITECTURES=("ft_transformer" "tab_transformer" "tabddpm")
 FORGET_STRATEGIES=("demographic" "random")
 MODES=("full")
-GPU_ID=6
+GPU_ID=1
 
 for DATASET_NAME in "${DATASETS[@]}"; do
     for ARCH in "${ARCHITECTURES[@]}"; do
