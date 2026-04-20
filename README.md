@@ -138,11 +138,11 @@ Configurable via `--forget_strategy` parameter.
 
 #### Experiment 2: German Credit (Demographic: Age<25) — Fairness Scenario
 
-| Method              | Forget Acc | Retain AUC ↑ | Test AUC ↑ | ΔEO (Fairness) ↓ | Time (s)  | Remark                |
-| ------------------- | ---------- | ------------ | ---------- | ---------------- | --------- | --------------------- |
-| Full Retrain        | 0.5841     | 0.9302       | 0.7891     | 0.2089           | 7.10      | Gold standard, unfair |
-| Gradient Ascent     | 0.4059     | 0.5434       | 0.5512     | 0.3589           | 1.71      | Fast but poor utility |
-| **LoRA (Ours, v2)** | **0.5346** | **0.8077**   | **0.7812** | **0.0519**       | **28.16** | **Best fairness**     |
+| Method              | Forget Acc | Retain AUC ↑ | Test AUC ↑ | KL Div ↓   | JS Div ↓   | ΔEO (Fairness) ↓ | Time (s) | Remark                |
+| ------------------- | ---------- | ------------ | ---------- | ---------- | ---------- | ---------------- | -------- | --------------------- |
+| Full Retrain        | 0.6832     | 0.8777       | 0.7482     | 0.0526     | 0.0123     | 0.0000           | 11.01    | Gold standard         |
+| Gradient Ascent     | 0.5941     | 0.5434       | 0.5645     | 0.5221     | 0.0823     | 0.0000           | 1.71     | Fast but poor utility |
+| **LoRA (Ours, v2)** | **0.6238** | **0.7931**   | **0.7224** | **0.0523** | **0.0145** | **0.0000**       | **8.92** | **Best utility**      |
 
 #### Experiment 3: Give Me Some Credit (Large Scale, Random Forget Set) — FT-Transformer
 
@@ -218,22 +218,6 @@ Configurable via `--forget_strategy` parameter.
 | LoRA (Ours)     | 0.4857     | 0.7873     | 0.7761   | 9.20     | **Best balance** |
 
 ### 📊 Key Insight: Trade-offs Analysis
-
-**Distribution Preservation (KL Divergence Analysis):**
-
-| Method          | German Credit KL | GMSC KL    | Interpretation                     |
-| --------------- | ---------------- | ---------- | ---------------------------------- |
-| Full Retrain    | 0.0584           | 0.0000     | Baseline (gold standard)           |
-| Gradient Ascent | 1.2535           | 2.1154     | **Poor distribution (~20× worse)** |
-| SISA            | 0.0612           | 0.0089     | Excellent preservation             |
-| **LoRA (Ours)** | **0.1266**       | **0.0342** | **Good balance (2-6× better GA)**  |
-
-**Key Distribution Findings:**
-* **LoRA's KL ≈ 2× Full Retrain** on small datasets (German), but **~6× better than Gradient Ascent**
-* **LoRA's KL ≈ same as Full Retrain** on large datasets (GMSC), showing **excellent distribution preservation**
-* SISA preserves distributions perfectly (KL ≈ 0) but **fails to forget** (forget_acc ≈ 0.74)
-* **LoRA achieves best trade-off**: moderate distribution change (2× FT) while achieving strong certified forgetting (forget_acc ≈ 0.51)
-* This means LoRA doesn't drastically alter model outputs—just removes specific data influence
 
 **Architecture Analysis:**
 * **FT-Transformer** achieves best forgetting quality (forget_acc ≈ 0.51) with baseline utility trade-off
@@ -441,13 +425,17 @@ python -m evaluation.metrics \
 
 - `--dataset`: Dataset choice (`german`, `gmsc`)
 - `--arch`: Model architecture (`ft_transformer`, `tab_transformer`, `tabddpm`)
-- `--forget_strategy`: Forgetting strategy (`random`, `demographic`, `temporal`)
-- `--mode`: Execution mode (`full`, `debug`)
-- `--epochs`: Number of training epochs
-- `--batch_size`: Training batch size
-- `--lr`: Learning rate
-- `--lora_r`: LoRA rank parameter
-- `--lora_alpha`: LoRA alpha parameter
+- `--forget_strategy`: Forgetting strategy (`random`, `demographic`)
+- `--forget_frac`: Fraction of data to forget (default: 0.10)
+- `--mode`: Execution mode (`full`, `quick`, `ablation`, `scalability`)
+- `--lora_rank`: LoRA rank parameter (default: 8)
+- `--data_dir`: Raw dataset directory (default: `data/raw`)
+- `--results_dir`: Output directory for results (default: `results`)
+- `--seed`: Random seed (default: 42)
+- `--epochs`: Training epochs for base model
+- `--no_baselines`: Skip baselines (flag)
+- `--no_mia`: Skip MIA evaluation (flag)
+- `--no_ablation`: Skip ablation studies (flag)
 
 ---
 
