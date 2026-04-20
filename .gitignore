@@ -8,3 +8,4 @@ models/checkpoints/
 .*
 data/
 *.sh
+logs

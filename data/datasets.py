@@ -4,12 +4,10 @@ Dataset loading, preprocessing, and forget-set construction for credit scoring.
 Supported datasets:
   - German Credit (UCI)          — 1,000 samples, 20 features
   - Give Me Some Credit (Kaggle) — 150,000 samples, 10 features
-  - LendingClub (temporal)       — 2M+ records, temporal splits
 
 Forget-set strategies:
   1. Random — random 5/10/20% of training data
   2. Demographic — age-based subgroup (age < 25 for German Credit)
-  3. Temporal — loans from 2008-2009 (LendingClub)
 """
 
 import os
@@ -323,13 +321,6 @@ def make_forget_set_demographic(
 ) -> np.ndarray:
     """Forget all samples where age < threshold (young demographic)."""
     return np.where(age_values < age_threshold)[0]
-
-
-def make_forget_set_temporal(
-    year_values: np.ndarray, start: int = 2007, end: int = 2009
-) -> np.ndarray:
-    """Forget samples from a specific time window (LendingClub)."""
-    return np.where((year_values >= start) & (year_values <= end))[0]
 
 
 # ──────────────────────────────────────────────
