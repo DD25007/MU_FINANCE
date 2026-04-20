@@ -1,5 +1,5 @@
 from models.ft_transformer import FTTransformer
-from models.kaustav_tab_transformer import TabTransformer
+from models.tab_transformer import TabTransformer
 from models.tabddpm import TabDDPM
 from models.lora import (
     LoRALinear,

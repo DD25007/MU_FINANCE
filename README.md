@@ -27,16 +27,16 @@ We use **Low-Rank Adaptation (LoRA)** to perform targeted updates:
 
 ### 1. Base Training
 
-Train model on full dataset (D = D_f \cup D_r)
+Train model on full dataset (D = $D_f \cup D_r$) to get base weights (W).
 
 ### 2. Forget Adapter (Gradient Ascent)
 
-* Train LoRA adapter on forget set (D_f)
+* Train LoRA adapter on forget set ($D_f$) using gradient ascent to maximize loss
 * Objective: degrade performance on forget samples
 
 ### 3. Retain Adapter (Distillation)
 
-* Train second adapter on retain set (D_r)
+* Train second adapter on retain set ($D_r$) using knowledge distillation from base model
 * Objective: recover utility via knowledge distillation
 
 ### Final Model
@@ -76,7 +76,6 @@ Low-Rank Adaptation is applied to attention layers:
 
 * **Random**: Uniform random subset (5-20% of data)
 * **Demographic**: Subgroup targeting (e.g., age < 25, gender = M)
-* **Temporal**: Time-window based (e.g., data before 2015)
 
 Configurable via `--forget_strategy` parameter.
 
@@ -192,9 +191,9 @@ MU_FINANCE/
 │   ├── processed/               # Processed data
 │   └── raw/                     # Raw datasets
 ├── unlearning/                  # Machine unlearning methods
-│   ├── kaustav_forget_adapter.py       # Forget adapter (gradient ascent)
-│   ├── kaustav_retain_adapter.py       # Retain adapter (distillation)
-│   ├── kaustav_mia.py                  # Membership inference attack
+│   ├── forget_adapter.py       # Forget adapter (gradient ascent)
+│   ├── retain_adapter.py       # Retain adapter (distillation)
+│   ├── mia.py                  # Membership inference attack
 │   ├── baselines.py             # Baseline methods
 │   ├── full_retrain.py          # Full retraining baseline
 │   ├── sisa.py                  # SISA unlearning

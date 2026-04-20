@@ -19,10 +19,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from data.datasets import prepare_datasets
 from train import build_model, train_model, load_model, evaluate
-from unlearning.kaustav_forget_adapter import run_forget_adapter
-from unlearning.kaustav_retain_adapter import run_retain_adapter
-from evaluation.kaustav_metrics import full_evaluation, forget_set_accuracy, compute_auc
-from evaluation.kaustav_mia import loss_based_mia
+from unlearning.forget_adapter import run_forget_adapter
+from unlearning.retain_adapter import run_retain_adapter
+from evaluation.metrics import full_evaluation, forget_set_accuracy, compute_auc
+from evaluation.mia import loss_based_mia
 
 
 def run_ablation_study(cfg: dict, base_model, data: dict, device: torch.device) -> dict:

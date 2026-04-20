@@ -16,7 +16,7 @@ import torch.nn as nn
 from typing import Optional
 
 from data.datasets import CreditDataset, make_loader
-from evaluation.kaustav_metrics import get_predictions
+from evaluation.metrics import get_predictions
 
 
 def compute_delta_eo(model, test_ds, groups, device, threshold=0.5):

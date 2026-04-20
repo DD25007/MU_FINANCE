@@ -15,7 +15,7 @@ for DATASET_NAME in "${DATASETS[@]}"; do
                     --dataset "$DATASET_NAME" \
                     --arch "$ARCH" \
                     --forget_strategy "$FORGET_STRATEGY" \
-                    --mode "$MODE" > "kaustav_${DATASET_NAME}_${ARCH}_${FORGET_STRATEGY}_${MODE}.log" 2>&1 &
+                    --mode "$MODE" > "${DATASET_NAME}_${ARCH}_${FORGET_STRATEGY}_${MODE}.log" 2>&1 &
             done
         done
     done

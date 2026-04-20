@@ -26,11 +26,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from data.datasets import prepare_datasets, make_loader
 from models.ft_transformer import FTTransformer
-from models.kaustav_tab_transformer import TabTransformer
+from models.tab_transformer import TabTransformer
 from models.lora import count_parameters, merge_lora_into_model
 from train import build_model, train_model, save_model, load_model, evaluate
-from unlearning.kaustav_forget_adapter import run_forget_adapter
-from unlearning.kaustav_retain_adapter import run_retain_adapter
+from unlearning.forget_adapter import run_forget_adapter
+from unlearning.retain_adapter import run_retain_adapter
 from unlearning.baselines import (
     baseline_full_retrain,
     baseline_gradient_ascent,
@@ -39,13 +39,13 @@ from unlearning.baselines import (
     baseline_influence_functions,
     baseline_random_labels,
 )
-from evaluation.kaustav_metrics import (
+from evaluation.metrics import (
     full_evaluation,
     forget_set_accuracy,
     compute_auc,
     get_predictions,
 )
-from evaluation.kaustav_mia import run_mia, loss_based_mia, run_full_mia_suite
+from evaluation.mia import run_mia, loss_based_mia, run_full_mia_suite
 
 
 # ──────────────────────────────────────────────
@@ -187,7 +187,7 @@ def run_pipeline(cfg: dict = None) -> dict:
 
     base_test_auc = compute_auc(base_model, test_ds, device)
     base_forget_acc = forget_set_accuracy(base_model, forget_ds, device)
-    from evaluation.kaustav_metrics import forget_set_auc
+    from evaluation.metrics import forget_set_auc
 
     base_forget_auc = forget_set_auc(base_model, forget_ds, device)
     print(

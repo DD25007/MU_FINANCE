@@ -16,8 +16,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from data_prep import prepare_all
 from evaluation.fairness import build_age_groups, compute_delta_eo
-from evaluation.kaustav_mia import run_mia
-from evaluation.kaustav_metrics import (
+from evaluation.mia import run_mia
+from evaluation.metrics import (
     compute_ece,
     compute_forget_accuracy,
     compute_forget_confidence,

@@ -1,4 +1,4 @@
-from evaluation.kaustav_metrics import (
+from evaluation.metrics import (
     full_evaluation,
     compute_auc,
     forget_set_accuracy,
@@ -13,7 +13,7 @@ from evaluation.kaustav_metrics import (
     compute_ece,
     count_updated_params,
 )
-from evaluation.kaustav_mia import run_mia, loss_based_mia
+from evaluation.mia import run_mia, loss_based_mia
 from evaluation.fairness import (
     compute_delta_eo,
     compute_demographic_parity,

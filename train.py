@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 
 from data.datasets import CreditDataset, make_loader
 from models.ft_transformer import FTTransformer
-from models.kaustav_tab_transformer import TabTransformer
+from models.tab_transformer import TabTransformer
 from models.tabddpm import TabDDPM
 from models.lora import count_parameters
 

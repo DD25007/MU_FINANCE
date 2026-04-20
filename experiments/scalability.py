@@ -16,10 +16,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from data.datasets import prepare_datasets
 from train import build_model, train_model, evaluate
-from unlearning.kaustav_forget_adapter import run_forget_adapter
-from unlearning.kaustav_retain_adapter import run_retain_adapter
+from unlearning.forget_adapter import run_forget_adapter
+from unlearning.retain_adapter import run_retain_adapter
 from unlearning.baselines import baseline_full_retrain
-from evaluation.kaustav_metrics import full_evaluation, forget_set_accuracy, compute_auc
+from evaluation.metrics import full_evaluation, forget_set_accuracy, compute_auc
 
 
 def run_scalability_experiment(cfg: dict, device: torch.device) -> dict:
