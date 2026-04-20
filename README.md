@@ -83,16 +83,16 @@ Configurable via `--forget_strategy` parameter.
 
 ## 📈 Evaluation Metrics
 
-| Metric          | Purpose                       |
-| --------------- | ----------------------------- |
-| Forget Accuracy | Should approach ~50%          |
-| Retain AUC      | Utility preservation          |
-| Test AUC        | Generalization                |
-| KL Divergence   | Distance from retrained model |
-| MIA Score       | Certified forgetting (≈0.5)   |
-| Relearning Gain | Forgetting robustness         |
-| Wall-clock Time | Efficiency                    |
-| Fairness (ΔEO)  | Bias reduction                |
+| Metric          | Optimal Value | Purpose                                    |
+| --------------- | ------------- | ------------------------------------------ |
+| Forget Accuracy | ≈ 0.50 (50%)  | Should approach ~50% (random)              |
+| Retain AUC      | ≈ 0.85+       | Utility preservation (high)                |
+| Test AUC        | ≈ 0.76+       | Generalization (high)                      |
+| KL Divergence   | ≈ 0.0         | Distance from retrained (low)              |
+| MIA Score       | ≈ 0.50        | Certified forgetting (random)              |
+| Relearning Gain | Low (<10%)    | Forgetting robustness                      |
+| Wall-clock Time | <200s (GMSC)  | Efficiency (4-5× faster than Full Retrain) |
+| Fairness (ΔEO)  | ≈ 0.0-0.05    | Bias reduction (near zero)                 |
 
 ---
 
@@ -138,84 +138,84 @@ Configurable via `--forget_strategy` parameter.
 
 #### Experiment 2: German Credit (Demographic: Age<25) — Fairness Scenario
 
-| Method              | Forget Acc | Retain AUC ↑ | Test AUC ↑ | ΔEO (Fairness) ↓ | Time (s) | Remark                |
-| ------------------- | ---------- | ------------ | ---------- | ---------------- | -------- | --------------------- |
-| Full Retrain        | 0.5841     | 0.9302       | 0.7891     | 0.2089           | 7.10     | Gold standard, unfair |
-| Gradient Ascent     | 0.4059     | 0.5434       | 0.5512     | 0.3589           | 1.71     | Fast but poor utility |
-| **LoRA (Ours, v2)** | **0.5346** | **0.8077**   | **0.7812** | **0.0519**       | **28.16**| **Best fairness**     |
+| Method              | Forget Acc | Retain AUC ↑ | Test AUC ↑ | ΔEO (Fairness) ↓ | Time (s)  | Remark                |
+| ------------------- | ---------- | ------------ | ---------- | ---------------- | --------- | --------------------- |
+| Full Retrain        | 0.5841     | 0.9302       | 0.7891     | 0.2089           | 7.10      | Gold standard, unfair |
+| Gradient Ascent     | 0.4059     | 0.5434       | 0.5512     | 0.3589           | 1.71      | Fast but poor utility |
+| **LoRA (Ours, v2)** | **0.5346** | **0.8077**   | **0.7812** | **0.0519**       | **28.16** | **Best fairness**     |
 
 #### Experiment 3: Give Me Some Credit (Large Scale, Random Forget Set) — FT-Transformer
 
-| Method              | Forget Acc | Forget AUC ↓ | Retain AUC ↑ | Test AUC ↑ | Time (s) | Speedup vs Retrain |
-| ------------------- | ---------- | ------------ | ------------ | ---------- | -------- | ------------------ |
-| Full Retrain        | 0.9393     | 0.8517       | 0.8525       | 0.8359     | 764.6    | 1.0x               |
-| Gradient Ascent     | 0.0613     | 0.4844       | 0.4743       | 0.4834     | 152.1    | 5.0x               |
-| SISA                | 0.9387     | 0.8511       | 0.8470       | 0.8332     | 220.2    | 3.5x               |
-| **LoRA (Ours, v2)** | **0.9415** | **0.8608**   | **0.7640**   | **0.7483** | **167.6**| **4.6x speedup**   |
+| Method              | Forget Acc | Forget AUC ↓ | Retain AUC ↑ | Test AUC ↑ | Time (s)  | Speedup vs Retrain |
+| ------------------- | ---------- | ------------ | ------------ | ---------- | --------- | ------------------ |
+| Full Retrain        | 0.9393     | 0.8517       | 0.8525       | 0.8359     | 764.6     | 1.0x               |
+| Gradient Ascent     | 0.0613     | 0.4844       | 0.4743       | 0.4834     | 152.1     | 5.0x               |
+| SISA                | 0.9387     | 0.8511       | 0.8470       | 0.8332     | 220.2     | 3.5x               |
+| **LoRA (Ours, v2)** | **0.9415** | **0.8608**   | **0.7640**   | **0.7483** | **167.6** | **4.6x speedup**   |
 
 #### Experiment 4: Cross-Model Comparison (German Credit, Random Forget Set)
 
-| Model              | Forget Acc | Forget AUC | Retain AUC | Test AUC | Time (s) | Remark               |
-| ------------------ | ---------- | ---------- | ---------- | -------- | -------- | -------------------- |
-| FT-Transformer     | 0.5143     | 0.5128     | 0.7528     | 0.7625   | 9.59     | Primary (best AUC)   |
-| TabTransformer     | 0.4000     | 0.4915     | 0.7970     | 0.7766   | 8.00     | Better utility       |
-| TabDDPM            | 0.4857     | 0.7094     | 0.7873     | 0.7761   | 9.20     | Strong forgetting    |
+| Model          | Forget Acc | Forget AUC | Retain AUC | Test AUC | Time (s) | Remark             |
+| -------------- | ---------- | ---------- | ---------- | -------- | -------- | ------------------ |
+| FT-Transformer | 0.5143     | 0.5128     | 0.7528     | 0.7625   | 9.59     | Primary (best AUC) |
+| TabTransformer | 0.4000     | 0.4915     | 0.7970     | 0.7766   | 8.00     | Better utility     |
+| TabDDPM        | 0.4857     | 0.7094     | 0.7873     | 0.7761   | 9.20     | Strong forgetting  |
 
 #### Experiment 5: Cross-Strategy Comparison (All Models & Datasets)
 
 **German Credit (Random vs Demographic)**
 
-| Model              | Strategy      | Forget Acc | Retain AUC | Test AUC | Time (s) |
-| ------------------ | ------------- | ---------- | ---------- | -------- | -------- |
-| FT-Transformer     | Random        | 0.5143     | 0.7528     | 0.7625   | 9.59     |
-| FT-Transformer     | Demographic   | 0.6238     | 0.7931     | 0.7224   | 8.92     |
-| TabTransformer     | Random        | 0.4000     | 0.7970     | 0.7766   | 8.00     |
-| TabTransformer     | Demographic   | 0.5644     | 0.8019     | 0.7649   | 12.50    |
-| TabDDPM            | Random        | 0.4857     | 0.7873     | 0.7761   | 9.20     |
-| TabDDPM            | Demographic   | 0.5941     | 0.8228     | 0.7563   | 26.55    |
+| Model          | Strategy    | Forget Acc | Retain AUC | Test AUC | Time (s) |
+| -------------- | ----------- | ---------- | ---------- | -------- | -------- |
+| FT-Transformer | Random      | 0.5143     | 0.7528     | 0.7625   | 9.59     |
+| FT-Transformer | Demographic | 0.6238     | 0.7931     | 0.7224   | 8.92     |
+| TabTransformer | Random      | 0.4000     | 0.7970     | 0.7766   | 8.00     |
+| TabTransformer | Demographic | 0.5644     | 0.8019     | 0.7649   | 12.50    |
+| TabDDPM        | Random      | 0.4857     | 0.7873     | 0.7761   | 9.20     |
+| TabDDPM        | Demographic | 0.5941     | 0.8228     | 0.7563   | 26.55    |
 
 **Give Me Some Credit (Random vs Demographic)**
 
-| Model              | Strategy      | Forget Acc | Retain AUC | Test AUC | Time (s) |
-| ------------------ | ------------- | ---------- | ---------- | -------- | -------- |
-| FT-Transformer     | Random        | 0.9404     | 0.8453     | 0.8337   | 1927.53  |
-| FT-Transformer     | Demographic   | 0.0759     | 0.8505     | 0.8295   | 1939.95  |
-| TabTransformer     | Random        | 0.9300     | 0.7775     | 0.7607   | 169.00   |
-| TabTransformer     | Demographic   | 0.9120     | 0.5562     | 0.5552   | 115.54   |
-| TabDDPM            | Random        | 0.9387     | 0.8405     | 0.8272   | 2765.26  |
-| TabDDPM            | Demographic   | 0.1278     | 0.8462     | 0.8247   | 433.64   |
+| Model          | Strategy    | Forget Acc | Retain AUC | Test AUC | Time (s) |
+| -------------- | ----------- | ---------- | ---------- | -------- | -------- |
+| FT-Transformer | Random      | 0.9404     | 0.8453     | 0.8337   | 1927.53  |
+| FT-Transformer | Demographic | 0.0759     | 0.8505     | 0.8295   | 1939.95  |
+| TabTransformer | Random      | 0.9300     | 0.7775     | 0.7607   | 169.00   |
+| TabTransformer | Demographic | 0.9120     | 0.5562     | 0.5552   | 115.54   |
+| TabDDPM        | Random      | 0.9387     | 0.8405     | 0.8272   | 2765.26  |
+| TabDDPM        | Demographic | 0.1278     | 0.8462     | 0.8247   | 433.64   |
 
 #### Experiment 6: Baseline Comparison Across Architectures (German Credit, Random)
 
 **FT-Transformer**
 
-| Method           | Forget Acc | Retain AUC | Test AUC | Time (s) | Remark          |
-| ---------------- | ---------- | ---------- | -------- | -------- | --------------- |
-| Full Retrain     | 0.7143     | 0.8574     | 0.7367   | 7.47     | Gold standard   |
-| Gradient Ascent  | 0.5143     | 0.6001     | 0.6176   | 11.70    | Good forgetting |
-| SISA             | 0.7429     | 0.7894     | 0.8076   | 8.36     | Competitive     |
-| Finetune Retain  | 0.8000     | 0.8079     | 0.7913   | 1.37     | No forgetting   |
-| LoRA (Ours)      | 0.5143     | 0.7528     | 0.7625   | 9.59     | **Best balance**|
+| Method          | Forget Acc | Retain AUC | Test AUC | Time (s) | Remark           |
+| --------------- | ---------- | ---------- | -------- | -------- | ---------------- |
+| Full Retrain    | 0.7143     | 0.8574     | 0.7367   | 7.47     | Gold standard    |
+| Gradient Ascent | 0.5143     | 0.6001     | 0.6176   | 11.70    | Good forgetting  |
+| SISA            | 0.7429     | 0.7894     | 0.8076   | 8.36     | Competitive      |
+| Finetune Retain | 0.8000     | 0.8079     | 0.7913   | 1.37     | No forgetting    |
+| LoRA (Ours)     | 0.5143     | 0.7528     | 0.7625   | 9.59     | **Best balance** |
 
 **TabTransformer**
 
-| Method           | Forget Acc | Retain AUC | Test AUC | Time (s) | Remark          |
-| ---------------- | ---------- | ---------- | -------- | -------- | --------------- |
-| Full Retrain     | 0.7143     | 0.8745     | 0.7414   | 10.08    | Gold standard   |
-| Gradient Ascent  | 0.2429     | 0.5408     | 0.6142   | 9.46     | Poor forgetting |
-| SISA             | 0.7571     | 0.7651     | 0.6889   | 8.12     | Good utility    |
-| Finetune Retain  | 0.8143     | 0.8567     | 0.7804   | 1.16     | No forgetting   |
-| LoRA (Ours)      | 0.4000     | 0.7970     | 0.7766   | 8.00     | **Best balance**|
+| Method          | Forget Acc | Retain AUC | Test AUC | Time (s) | Remark           |
+| --------------- | ---------- | ---------- | -------- | -------- | ---------------- |
+| Full Retrain    | 0.7143     | 0.8745     | 0.7414   | 10.08    | Gold standard    |
+| Gradient Ascent | 0.2429     | 0.5408     | 0.6142   | 9.46     | Poor forgetting  |
+| SISA            | 0.7571     | 0.7651     | 0.6889   | 8.12     | Good utility     |
+| Finetune Retain | 0.8143     | 0.8567     | 0.7804   | 1.16     | No forgetting    |
+| LoRA (Ours)     | 0.4000     | 0.7970     | 0.7766   | 8.00     | **Best balance** |
 
 **TabDDPM**
 
-| Method           | Forget Acc | Retain AUC | Test AUC | Time (s) | Remark          |
-| ---------------- | ---------- | ---------- | -------- | -------- | --------------- |
-| Full Retrain     | 0.7714     | 0.8330     | 0.7637   | 15.38    | Gold standard   |
-| Gradient Ascent  | 0.2429     | 0.4876     | 0.5527   | 2.20     | Poor utility    |
-| SISA             | 0.7429     | 0.7733     | 0.8196   | 11.33    | Good utility    |
-| Finetune Retain  | 0.8286     | 0.8261     | 0.7494   | 1.69     | No forgetting   |
-| LoRA (Ours)      | 0.4857     | 0.7873     | 0.7761   | 9.20     | **Best balance**|
+| Method          | Forget Acc | Retain AUC | Test AUC | Time (s) | Remark           |
+| --------------- | ---------- | ---------- | -------- | -------- | ---------------- |
+| Full Retrain    | 0.7714     | 0.8330     | 0.7637   | 15.38    | Gold standard    |
+| Gradient Ascent | 0.2429     | 0.4876     | 0.5527   | 2.20     | Poor utility     |
+| SISA            | 0.7429     | 0.7733     | 0.8196   | 11.33    | Good utility     |
+| Finetune Retain | 0.8286     | 0.8261     | 0.7494   | 1.69     | No forgetting    |
+| LoRA (Ours)     | 0.4857     | 0.7873     | 0.7761   | 9.20     | **Best balance** |
 
 ### 📊 Key Insight: Trade-offs Analysis
 
@@ -280,16 +280,16 @@ Configurable via `--forget_strategy` parameter.
 
 ### Component Necessity & V2 Optimizations (German Credit, FT-Transformer)
 
-| Configuration             | Forget Acc | Forget AUC | Retain AUC | ΔEO (Fair) | Finding                          |
-| ------------------------- | ---------- | ---------- | ---------- | ---------- | -------------------------------- |
-| V1: Phase 2 only          | 0.5429     | 0.5205     | 0.7568     | 0.585      | Strong forgetting, poor utility  |
-| V1: Phase 3 only          | 0.8286     | 0.8491     | 0.8035     | 0.730      | No forgetting, good utility      |
-| V1: Phase 2+3             | 0.6000     | 0.5205     | 0.7568     | 0.585      | Balance but fairness weak        |
+| Configuration             | Forget Acc | Forget AUC | Retain AUC | ΔEO (Fair) | Finding                         |
+| ------------------------- | ---------- | ---------- | ---------- | ---------- | ------------------------------- |
+| V1: Phase 2 only          | 0.5429     | 0.5205     | 0.7568     | 0.585      | Strong forgetting, poor utility |
+| V1: Phase 3 only          | 0.8286     | 0.8491     | 0.8035     | 0.730      | No forgetting, good utility     |
+| V1: Phase 2+3             | 0.6000     | 0.5205     | 0.7568     | 0.585      | Balance but fairness weak       |
 | **V2: +Noise Inject**     | **0.5143** | **0.5128** | **0.7528** | **0.120**  | ✓ Better MIA resistance         |
 | **V2: +Per-layer Clip**   | **0.5143** | **0.5128** | **0.7528** | **0.085**  | ✓ Fair gradient control         |
 | **V2: +CosineAnneal LR**  | **0.5000** | **0.5061** | **0.7514** | **0.071**  | ✓ Optimal forget_acc (~50%)     |
-| **V2: +Bad-Teacher Reg**  | **0.5143** | **0.5128** | **0.7528** | **0.052**  | ✓ Best fairness (ΔEO ↓)        |
-| **V2: Full Stack (Best)** | **0.5143** | **0.5128** | **0.7528** | **0.051**  | ✓✓ All 5 optimizations (SOTA)  |
+| **V2: +Bad-Teacher Reg**  | **0.5143** | **0.5128** | **0.7528** | **0.052**  | ✓ Best fairness (ΔEO ↓)         |
+| **V2: Full Stack (Best)** | **0.5143** | **0.5128** | **0.7528** | **0.051**  | ✓✓ All 5 optimizations (SOTA)   |
 
 **Key Findings:**
 - **Phase 2 alone** achieves forgetting but destroys utility (0.756 → unlearned)
