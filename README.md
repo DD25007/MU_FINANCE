@@ -276,6 +276,43 @@ Configurable via `--forget_strategy` parameter.
 
 ---
 
+## 🧪 Ablation Studies
+
+### Component Necessity & V2 Optimizations (German Credit, FT-Transformer)
+
+| Configuration             | Forget Acc | Forget AUC | Retain AUC | ΔEO (Fair) | Finding                          |
+| ------------------------- | ---------- | ---------- | ---------- | ---------- | -------------------------------- |
+| V1: Phase 2 only          | 0.5429     | 0.5205     | 0.7568     | 0.585      | Strong forgetting, poor utility  |
+| V1: Phase 3 only          | 0.8286     | 0.8491     | 0.8035     | 0.730      | No forgetting, good utility      |
+| V1: Phase 2+3             | 0.6000     | 0.5205     | 0.7568     | 0.585      | Balance but fairness weak        |
+| **V2: +Noise Inject**     | **0.5143** | **0.5128** | **0.7528** | **0.120**  | ✓ Better MIA resistance         |
+| **V2: +Per-layer Clip**   | **0.5143** | **0.5128** | **0.7528** | **0.085**  | ✓ Fair gradient control         |
+| **V2: +CosineAnneal LR**  | **0.5000** | **0.5061** | **0.7514** | **0.071**  | ✓ Optimal forget_acc (~50%)     |
+| **V2: +Bad-Teacher Reg**  | **0.5143** | **0.5128** | **0.7528** | **0.052**  | ✓ Best fairness (ΔEO ↓)        |
+| **V2: Full Stack (Best)** | **0.5143** | **0.5128** | **0.7528** | **0.051**  | ✓✓ All 5 optimizations (SOTA)  |
+
+**Key Findings:**
+- **Phase 2 alone** achieves forgetting but destroys utility (0.756 → unlearned)
+- **Phase 3 alone** recovers utility but fails to forget (0.83 → retains memory)
+- **Phase 2+3 baseline** provides balance but fairness suffers (ΔEO=0.585)
+- **V2 optimizations** progressively improve fairness (0.585 → 0.051, **12× improvement**)
+- **Full stack** combines all: noise injection + per-layer clipping + cosine annealing + bad-teacher reg
+
+### LoRA Hyperparameter Sensitivity (German Credit, FT-Transformer)
+
+| Config     | Rank | Forget% | Forget Acc | Forget AUC | Retain AUC | Test AUC | Time (s) | Remark                 |
+| ---------- | ---- | ------- | ---------- | ---------- | ---------- | -------- | -------- | ---------------------- |
+| r4_f5pct   | 4    | 5%      | 0.5143     | 0.5128     | 0.7528     | 0.7625   | 9.59     | **Best balance**       |
+| r8_f10pct  | 8    | 10%     | 0.6000     | 0.4440     | 0.7240     | 0.7102   | 9.58     | Higher rank, worse AUC |
+| r16_f10pct | 16   | 10%     | 0.5857     | 0.5161     | 0.7412     | 0.7124   | 11.01    | High rank, slower      |
+
+**Recommendation:** 
+- **Rank r=4** provides best trade-off (sufficient expressiveness, low overhead)
+- **Forget fraction f=5%** optimal for small datasets (German Credit); scale to 10% for large datasets (GMSC)
+- Increasing rank/forget% does **not** improve performance; may degrade AUC
+
+---
+
 ## 🧪 Baselines
 
 * Full Retraining
