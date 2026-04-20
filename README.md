@@ -88,7 +88,8 @@ Configurable via `--forget_strategy` parameter.
 | Forget Accuracy | ≈ 0.50 (50%)  | Should approach ~50% (random)              |
 | Retain AUC      | ≈ 0.85+       | Utility preservation (high)                |
 | Test AUC        | ≈ 0.76+       | Generalization (high)                      |
-| KL Divergence   | ≈ 0.0         | Distance from retrained (low)              |
+| KL Divergence   | ≈ 0.0-0.15    | Distribution distance (low)                |
+| JS Divergence   | ≈ 0.0-0.04    | Symmetric distribution distance (low)      |
 | MIA Score       | ≈ 0.50        | Certified forgetting (random)              |
 | Relearning Gain | Low (<10%)    | Forgetting robustness                      |
 | Wall-clock Time | <200s (GMSC)  | Efficiency (4-5× faster than Full Retrain) |
