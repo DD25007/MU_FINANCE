@@ -273,7 +273,6 @@ Configurable via `--forget_strategy` parameter.
 * LiRA attack
 * Relearning attack
 * Calibrated shadow MIA
-* Confidence intervals
 
 ---
 
