@@ -261,7 +261,6 @@ Configurable via `--forget_strategy` parameter.
 * Noise injection (DP-inspired)
 * Per-layer gradient clipping
 * Cosine annealing LR
-* Likelihood ratio logging
 
 ### Retain Adapter Enhancements
 
