@@ -134,7 +134,7 @@ Configurable via `--forget_strategy` parameter.
 | Gradient Ascent     | 0.5143       | 0.2286       | 0.6001       | 0.6176     | 1.2535     | 0.3897     | 11.70    | Poor utility       |
 | SISA                | 0.7429       | 0.6959       | 0.7894       | 0.8076     | 0.0612     | 0.0165     | 8.36     | Competitive        |
 | Finetune Retain     | 0.8000       | 0.8413       | 0.8079       | 0.7913     | 0.0011     | 0.0001     | 1.37     | No forgetting      |
-| **LoRA (Ours, v2)** | **0.5143**   | **0.5128**   | **0.7528**   | **0.7625** | **0.1266** | **0.0354** | **9.59** | **Best trade-off** |
+| **LoRA (Ours)** | **0.5143**   | **0.5128**   | **0.7528**   | **0.7625** | **0.1266** | **0.0354** | **9.59** | **Best trade-off** |
 
 #### Experiment 2: German Credit (Demographic: Age<25) — Fairness Scenario
 
@@ -142,7 +142,7 @@ Configurable via `--forget_strategy` parameter.
 | ------------------- | ---------- | ------------ | ---------- | ---------- | ---------- | ---------------- | -------- | --------------------- |
 | Full Retrain        | 0.6832     | 0.8777       | 0.7482     | 0.0526     | 0.0123     | 0.0000           | 11.01    | Gold standard         |
 | Gradient Ascent     | 0.5941     | 0.5434       | 0.5645     | 0.5221     | 0.0823     | 0.0000           | 1.71     | Fast but poor utility |
-| **LoRA (Ours, v2)** | **0.6238** | **0.7931**   | **0.7224** | **0.0523** | **0.0145** | **0.0000**       | **8.92** | **Best utility**      |
+| **LoRA (Ours)** | **0.6238** | **0.7931**   | **0.7224** | **0.0523** | **0.0145** | **0.0000**       | **8.92** | **Best utility**      |
 
 #### Experiment 3: Give Me Some Credit (Large Scale, Random Forget Set) — FT-Transformer
 
@@ -151,7 +151,7 @@ Configurable via `--forget_strategy` parameter.
 | Full Retrain        | 0.9393     | 0.8517       | 0.8525       | 0.8359     | 0.0000     | 0.0000     | 764.6     | 1.0x               |
 | Gradient Ascent     | 0.0613     | 0.4844       | 0.4743       | 0.4834     | 2.1154     | 0.3456     | 152.1     | 5.0x               |
 | SISA                | 0.9387     | 0.8511       | 0.8470       | 0.8332     | 0.0089     | 0.0024     | 220.2     | 3.5x               |
-| **LoRA (Ours, v2)** | **0.9415** | **0.8608**   | **0.7640**   | **0.7483** | **0.0342** | **0.0089** | **167.6** | **4.6x speedup**   |
+| **LoRA (Ours)** | **0.9415** | **0.8608**   | **0.7640**   | **0.7483** | **0.0342** | **0.0089** | **167.6** | **4.6x speedup**   |
 
 #### Experiment 4: Cross-Model Comparison (German Credit, Random Forget Set)
 
@@ -280,7 +280,7 @@ Configurable via `--forget_strategy` parameter.
 
 ## 🧪 Ablation Studies
 
-### Component Necessity & V2 Optimizations (German Credit, FT-Transformer)
+### Component Necessity & Optimizations (German Credit, FT-Transformer)
 
 | Configuration             | Forget Acc | Forget AUC | Retain AUC | ΔEO (Fair) | Finding                         |
 | ------------------------- | ---------- | ---------- | ---------- | ---------- | ------------------------------- |
@@ -297,7 +297,7 @@ Configurable via `--forget_strategy` parameter.
 - **Phase 2 alone** achieves forgetting but destroys utility (0.756 → unlearned)
 - **Phase 3 alone** recovers utility but fails to forget (0.83 → retains memory)
 - **Phase 2+3 baseline** provides balance but fairness suffers (ΔEO=0.585)
-- **V2 optimizations** progressively improve fairness (0.585 → 0.051, **12× improvement**)
+- **Optimizations** progressively improve fairness (0.585 → 0.051, **12× improvement**)
 - **Full stack** combines all: noise injection + per-layer clipping + cosine annealing + bad-teacher reg
 
 ### LoRA Hyperparameter Sensitivity (German Credit, FT-Transformer)
