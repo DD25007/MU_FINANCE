@@ -284,14 +284,14 @@ Configurable via `--forget_strategy` parameter.
 
 | Configuration             | Forget Acc | Forget AUC | Retain AUC | ΔEO (Fair) | Finding                         |
 | ------------------------- | ---------- | ---------- | ---------- | ---------- | ------------------------------- |
-| V1: Phase 2 only          | 0.5429     | 0.5205     | 0.7568     | 0.585      | Strong forgetting, poor utility |
-| V1: Phase 3 only          | 0.8286     | 0.8491     | 0.8035     | 0.730      | No forgetting, good utility     |
-| V1: Phase 2+3             | 0.6000     | 0.5205     | 0.7568     | 0.585      | Balance but fairness weak       |
-| **V2: +Noise Inject**     | **0.5143** | **0.5128** | **0.7528** | **0.120**  | ✓ Better MIA resistance         |
-| **V2: +Per-layer Clip**   | **0.5143** | **0.5128** | **0.7528** | **0.085**  | ✓ Fair gradient control         |
-| **V2: +CosineAnneal LR**  | **0.5000** | **0.5061** | **0.7514** | **0.071**  | ✓ Optimal forget_acc (~50%)     |
-| **V2: +Bad-Teacher Reg**  | **0.5143** | **0.5128** | **0.7528** | **0.052**  | ✓ Best fairness (ΔEO ↓)         |
-| **V2: Full Stack (Best)** | **0.5143** | **0.5128** | **0.7528** | **0.051**  | ✓✓ All 5 optimizations (SOTA)   |
+| Phase 2 only          | 0.5429     | 0.5205     | 0.7568     | 0.585      | Strong forgetting, poor utility |
+| Phase 3 only          | 0.8286     | 0.8491     | 0.8035     | 0.730      | No forgetting, good utility     |
+| Phase 2+3             | 0.6000     | 0.5205     | 0.7568     | 0.585      | Balance but fairness weak       |
+| **Phase2+Noise Inject**     | **0.5143** | **0.5128** | **0.7528** | **0.120**  | ✓ Better MIA resistance         |
+| **Phase2+Per-layer Clip**   | **0.5143** | **0.5128** | **0.7528** | **0.085**  | ✓ Fair gradient control         |
+| **Phase2+CosineAnneal LR**  | **0.5000** | **0.5061** | **0.7514** | **0.071**  | ✓ Optimal forget_acc (~50%)     |
+| **Phase2+Bad-Teacher Reg**  | **0.5143** | **0.5128** | **0.7528** | **0.052**  | ✓ Best fairness (ΔEO ↓)         |
+| **Phase2 Full Stack (Best)** | **0.5143** | **0.5128** | **0.7528** | **0.051**  | ✓✓ All 5 optimizations (SOTA)   |
 
 **Key Findings:**
 - **Phase 2 alone** achieves forgetting but destroys utility (0.756 → unlearned)
