@@ -444,27 +444,6 @@ python -m evaluation.metrics \
 
 ---
 
-## 📜 License
-
-MIT License
-
----
-
-## 🤝 Citation
-
-If you use this work, please cite:
-
-```
-@inproceedings{mufinance2026,
-  title={LoRA Machine Unlearning for Credit Scoring: Parameter-Efficient Data Forgetting with Minimal Utility Loss},
-  author={Goswami, Kaustav},
-  booktitle={Proceedings of Machine Learning and Systems},
-  year={2026}
-}
-```
-
----
-
 ## 📬 Contact
 
 For queries, bug reports, or collaboration requests, please open an issue on GitHub or contact the maintainers directly.
